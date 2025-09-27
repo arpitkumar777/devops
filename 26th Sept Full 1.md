@@ -2,7 +2,8 @@
 wget -O /etc/yum.repos.d/jenkins.repo \
     https://pkg.jenkins.io/redhat-stable/jenkins.repo
     
-   
+   wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
     rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
     yum upgrade
     yum install java-21-amazon-corretto -y
@@ -434,5 +435,6 @@ Update user information in tomcat-users.xml
 
 
 -> copy Tomcat server ip and open in a new tab then
+
 
 
