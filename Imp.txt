@@ -1,0 +1,132 @@
+ISO file - An ISO file(archive of an optical disk) is a single-file, exact digital replica of an entire optical disc like a CD, DVD, or Blu-ray, containing all its data, folders, and file system structure
+
+_____________________________________________________________________________________________________________________________________
+
+3 roots of Linux 
+Root user (root)
+Root home directory (/)
+Root user's home directory (/root)
+
+3 users in Linux
+user admin
+   |
+    --- super user
+    --- root(auto create)
+    --- power user(created by machine)
+    --- admin
+   |
+    --- system user - (httpd, smbd, sshd) d- demons 
+   |
+    --- normal user(created by root)
+	swayam
+	xyz
+	etc
+	ajit
+
+________________________________________________________________________________________________________________________________________
+
+3 dollars are present in pw 
+first dollar and second dollar - sha512(encrypt method) - used to encrypt password
+before third dollar- salt value salt is a random string of chars added to the pw before it is hashed.
+salt value never matches.
+after third dollar, comes password.
+
+
+_________________________________________________________________________________________________________________________________________
+
+#usermod -s /sbin/nologin jacksparrow - no one can login from his account. disable a user's ability to log into the system via shell.
+shell is changed
+usermod -s/bin/bash jacksparrow - acc is unlocked--enter into jacksparrow, changes user's default login shell to bash exit to return to root.
+
+
+___________________________________________________________________________________________________________________________________________
+
+
+# cat /etc/passwd
+cat stands for concatenate and it helps to read file contents.
+it contains info that does not require security(uid, gid, pw in xx format, etc)
+/etc/shadow is a plain text file which stores secure user account information. It is the most protected file related to user management on a Linux system.
+it contains info which needs to be protected(dEimMW)
+
+
+_______________________________________________________________________________________________________________________________________________
+
+#useradd -d /home/jacksparrow/ swayam - swayam will replace jacksparrow, so //no new home direc will be created. swayam can now access jacksparrow's content.
+//userdel will not remove datas.
+#su -swayam
+// permission will be denied.
+#cat /etc/passwd | grep -i swayam
+//error will occur
+#touch kk
+//permission denied
+we have to change permission
+#chown swayam /home/jacksparrow
+#chgrp swayam /home/jacksparrow
+
+
+___________________________________________________________________________________________________________
+
+umask manages default permissions.
+777 - 022 = 755 - default permission for folder
+666 - 022 = 644 - default permission for file
+
+
+# umask
+# l.
+# vim .bashrc
+
+umask manages default permissions
+
+
+change rwx policies
+# echo "umask 002" >> ~/.bashrc
+[root@ip-172-31-92-148 ~]# mkdir /sandata
+[root@ip-172-31-92-148 ~]# ll -d /sandata/
+
+new permissions does not gets applied after changing using echo umask.
+#source .bashrc ,is used to explicitly read changes without getting exited from the current session (forcefully), otherwise we can terminate and restart/ by quitting.
+
+eg:
+[root@ip-172-31-92-148 ~]# umask
+0022
+[root@ip-172-31-92-148 ~]# l.
+.bash_logout  .bash_profile  .bashrc  .cshrc  .ssh  .tcshrc
+[root@ip-172-31-92-148 ~]# vim.bashrc
+-bash: vim.bashrc: command not found
+[root@ip-172-31-92-148 ~]# vim .bashrc
+[root@ip-172-31-92-148 ~]# echo "umask 002" >> ~/.bashrc
+[root@ip-172-31-92-148 ~]# mkdir /sandata
+[root@ip-172-31-92-148 ~]# ll -d /sandata/
+drwxr-xr-x. 2 root root 6 Sep 23 04:19 /sandata/  , did not change
+[root@ip-172-31-92-148 ~]# source .bashrc      , to explicitly force the terminal to read the changes
+[root@ip-172-31-92-148 ~]# mkdir /swayammm
+[root@ip-172-31-92-148 ~]# ll -d /swayammm/
+drwxrwxr-x. 2 root root 6 Sep 23 04:21 /swayammm/
+[root@ip-172-31-92-148 ~]#
+
+_______________________________________________________________________________________________________________________________________________
+
+{root@ip-172-31-84-21 ~]# yum install httpd
+[root@ip-172-31-84-21 ~]# rpmquery httpd
+[root@ip-172-31-84-21 ~]# cd /var/www/html/
+[root@ip-172-31-84-21 html]# cat > index.html
+hello all good day
+[root@ip-172-31-84-21 html]# cat index.html
+hello all good day
+[root@ip-172-31-84-21 ~]# systemctl start httpd
+[root@ip-172-31-84-21 ~]# systemctl status httpd
+[root@ip-172-31-84-21 ~]# systemctl enable httpd
+[root@ip-172-31-84-21 ~]# ll -d /var/www/html/
+drwxr-xr-x. 2 root root 6 Aug 26 22:53 /var/www/html/
+[root@ip-172-31-84-21 ~]#vim/etc/httpd/conf/httpd.conf
+change port to 81
+[root@ip-172-31-84-21 html]# yum install curl
+[root@ip-172-31-84-21 html]# systemctl restart httpd
+[root@ip-172-31-84-21 html]# curl http://publicip:81
+
+
+[root@ip-172-31-84-21 ~]# systemctl restart httpd
+[root@ip-172-31-84-21 ~]# curl http://localhost:81
+
+
+

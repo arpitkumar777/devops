@@ -1,0 +1,86 @@
+in git-server.example.com (main server)
+create 3 instances with same key pair and in same security group.
+
+PS C:\Users\10844672\Downloads> ssh -i "inst-grp.pem" ec2-user@ec2-54-172-64-48.compute-1.amazonaws.com
+The authenticity of host 'ec2-54-172-64-48.compute-1.amazonaws.com (54.172.64.48)' can't be established.
+ED25519 key fingerprint is SHA256:zsVdhJj+8pzyHJueiGmNdtzob7aUR9NiM9MN7ArI/9I.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+[ec2-user@ip-172-31-94-250 ~]$ sudo su -
+[root@ip-172-31-94-250 ~]# yum install git -y
+[root@ip-172-31-94-250 ~]# git -v
+git version 2.50.1
+[root@ip-172-31-94-250 ~]# hostname set-hostname git-server.example.com
+[root@ip-172-31-94-250 ~]# bash                      (to forcefully change the hostname in the current session)
+[root@git-server ~]# hostname
+git-server.example.com
+[root@git-server ~]# ip a s
+[root@git-server ~]# mkdir /code
+[root@git-server ~]# cd /code
+[root@git-server code]# git init  --bare
+[root@git-server code]# ls
+HEAD  config  description  hooks  info  objects  refs
+[root@git-server code]# hostname
+git-server.example.com
+[root@git-server code]# vim /etc/hosts
+
+inside git-server's vim
+I
+
+172.31.94.250 git-server.example.com
+------------- dev-one.example.com
+------------- dev-two.example.com
+
+execute the below commands after setting up in 2 local machines
+also in security group, edit inbound rules and allow icmpv4 and 0.0.0.0/0
+[root@git-server code]# ping 172.31.25.108 (ip of dev-one.example.com)
+[root@git-server code]# ping ------------- (ip of dev-two.example.com)
+
+
+in dev one
+
+PS C:\Users\10844672\Downloads> ssh -i "inst-grp.pem" ec2-user@ec2-54-211-228-63.compute-1.amazonaws.com
+The authenticity of host 'ec2-54-211-228-63.compute-1.amazonaws.com (54.211.228.63)' can't be established.
+[ec2-user@ip-172-31-88-47 ~]$ sudo su -
+[root@ip-172-31-88-47 ~]# hostnamectl set-hostname devops-one.example.com
+[root@ip-172-31-88-47 ~]# bash
+[root@devops-one ~]# hostname
+devops-one
+[root@devops-one ~]# yum install git -y
+[root@devops-one ~]# git init
+[root@devops-one ~]# mkdir /dev1
+[root@devops-one ~]# cd /dev1
+[root@devops-one dev2]# pwd
+/dev1
+[root@devops-one dev2]# hostname
+devops-one
+[root@devops-one dev2]# ip a s
+copy ip
+
+[root@devops-one ]# l.
+[root@devops-one ~]# ssh-keygen
+Generating public/private rsa key pair.
+[root@devops-one ~]# cat .ssh/id_rsa.pub
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDcHWyjyvjmyOK7sIMBk7nJtG87Wp4Zk+bXZathfxI3WXMoTSYheAo8rYjX+TeGRLbQsHS2yWW1gX7lOnO43pBFGe+V11sonZodw2Ag4jiZgv5SsGbuJNuNdqqFTobQ+9E/+gj38mNDIYE004pHhNqNMYjxaDWe27n/VP98mwFRtF8EfHlJRutEZt9Sk+bAvpVtalCQosKyWR5asFb6Q36gbb/btXbkAz/3toxatjKJz2MeTBZTUq48Qkl0pwWB8SZ7j0S6oFwuHE5ifXMNqv3pHB4h
+copy the above rsa key then go to git server oneexample.com
+
+in git-server-one.example.com
+
+cd.ssh(maybe)
+[root@git-server ~]# vim authorized_keys
+paste the ssh-rsa of both the machines.
+
+
+
+
+
+
+another instance (java code with maeven)
+ 
+
+
+
+
+
+
+

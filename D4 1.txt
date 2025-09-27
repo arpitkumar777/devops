@@ -1,0 +1,58 @@
+Jenkins, also deploys, automates our env,
+Alternates of Jenkins - teamcity, circle ci, GitHub action
+Alternates of Docker
+Community edition vs 
+Built on Java, java dependencies can vary from os to os
+ssh should be allowed in sec group always for Linux
+custom port for Jenkins - 8080, in sec group - add custom tcp - 8080 = allow all icpv4
+
+#yum install wget -y
+[root@jenkins ~]# yum repolist all
+#sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+[root@jenkins ~]# yum install jenkins -y
+
+
+#yum install Jenkins -y
+#systemctl start Jenkins
+#systemctl enable Jenkins
+copy public ip from instances' networking.
+paste in google, 0.0.0.0/8080
+
+
+
+variable content vs persistent content(etc(configuration file))   understand
+#df -h   to get the available disk space   - disk file in human readable
+how to inc runtime of temp file
+
+
+
+#sudo mount -o remount,size=2G /tmp
+#df -h
+
+stored in temp file, will get deleted once reloaded
+but in current session, change will occur
+
+
+#vim /etc/fstab
+i
+tmpfs /tmp tmpfs defaults,noatime,mode=1777,size=2G 0 0     ,hars codes the storage
+wq!
+
+#systemctl daemon-reload
+#reboot
+reboot the instance
+
+
+
+
+------------------------------------
+working of actual env
+host a java based app/web server
+
+
+we use maven to build java app
+maven is a build tool
+maven shows the output in xar ext file
+
+java should be installed before tomcat as java is the primary requisite for java

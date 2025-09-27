@@ -1,0 +1,250 @@
+DevOps is a process framework
+Infra is hosted by the cloud provider
+plan > developers > designing code > 
+automation is required between dev and ops to shift the application from dev to ops.
+Done through Jenkins(open source)
+
+auto scaling or Kubernetes horizontal scaling to manage heavy workload
+previous application should not go down while deploying new changes, it should be live
+
+plan - code - build - test - release - deploy - operate - monitor
+------------CI---------------------   ----------CD------------
+Cont int vs del vs dep
+
+
+Version Control
+SVC - Software version control
+GitHub is a distributed VCS (system) 
+
+git init --bare runs only on server
+when u r hosting an env, u cannot miss anything
+
+on server machine
+#cat /etc/os-release     , to check version
+# uname -r               , shows kernel
+something
+# hostnamectl set-hostname git-server.example.com
+# bash
+# hostname
+# ip a s
+# yum update -y          , to update the OS after setup
+# mkdir /code
+# cd /code
+# yum install git -y
+# git init --bare       ,as this is server
+# ls
+
+
+in dev one machine
+# mkdir /dev-two
+# hostnamectl set-hostname dev-two.example.com
+# bash
+
+
+in dev two machine
+# mkdir /dev-two
+# hostnamectl set-hostname dev-two.example.com
+# bash
+
+
+[root@git-server code]# vim /etc/hosts
+
+
+
+
+
+in devops1 dir
+# cat > index.html
+hello
+
+#git status
+no commits yet
+
+git add index.html
+git status
+git commit -m first-commit index.html
+
+to push this file in server
+
+#git remote -y
+blank means no address.
+
+ccome out once from devops1
+
+cd .ssh/
+ssh-keygen
+ll
+
+
+explicit
+
+vim authorized-keys
+have to paste ig
+cat .ssh/id_rsa.hub
+
+in root
+git log
+------------
+
+
+in dev 1
+cd /devops1
+git remote add origin root@git-server.example.com:/master
+git remote -v
+git push origin master
+git remote remove origin
+
+
+in devops-two
+
+cd /dev2/
+git clone root@git-server.example.com:/code    ,        ,copies the content of code repo completely to  devops-two machine.
+
+#cat index.html
+content made on main machine will show here as it was under code repo and is copied.
+completed
+
+
+----------------------------------------
+git remote -v      ,in d2
+inside code, as t is copied in d2
+git push origin master
+
+---------------------------------------
+
+
+-----
+to ping
+allow security groups to inbound - allow icmpv4, 0000/0
+then ping will work 
+
+
+in dev 2
+l.
+cd .ssh/
+ll
+
+
+
+for ssh keys
+
+[root@devops-one .ssh]# cd
+[root@devops-one ~]# ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/root/.ssh/id_rsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /root/.ssh/id_rsa
+Your public key has been saved in /root/.ssh/id_rsa.pub
+[root@devops-one ~]# cat .ssh/id_rsa.pub
+
+
+[root@devops-two ~]# vim authorized_keys
+[root@devops-two ~]# ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/root/.ssh/id_rsa):
+/root/.ssh/id_rsa already exists.
+Overwrite (y/n)? y
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /root/.ssh/id_rsa
+Your public key has been saved in /root/.ssh/id_rsa.pub
+[root@devops-two ~]# cat .ssh/id_rsa.pub
+rsa key will appear, copy it
+
+in git server 
+[root@git-server ~]# vim authorized_keys
+I
+paste the copied sec-key of both the client machines
+
+-----------------------------------------------------------------
+GIT
+
+PULL ORIGIN -> MASTER
+dev 1 is on holiday
+
+in dev2
+
+vim index.html
+enter msg
+git add .
+git commit -m dev-two index.html
+git push origin -> master
+
+vim index.html
+enter msg 2
+git add .
+git commit -m update 2 done
+git push origin -> master
+
+
+dev 1 joins
+
+he wants the made changes by dev2
+clone will not work, only recent changes are req
+we can use 
+# git pull origin master
+fetched from master
+origin is updating 
+now cat index.html
+
+chabges reflect in dev1 machine - the changes made by dev 2 while dev 1 was away inside index.html
+
+now inside dev one only
+
+vim index.html
+insert message
+
+git add .
+git commit -m dev-one index.html
+git push origin master
+
+now dev2 require the changes
+git pull origin master
+cat index.html
+
+pull and clone diff understand
+
+
+
+
+-----------------------------------------------------------------
+git branching
+#git branch stage      ,create new branch named stage
+#git branch    , to check the branches available, by default master is present.
+		we have to switch from master
+#git checkout stage    ,to move to stage from current
+for the first time, adds all contents of master node to sub branch
+#git branch        ,automatically move to stage only once.
+#vim index.html
+xyz
+#git add .
+#git commit -m lti-devops index.html
+git remote -v   ,initiates
+
+now switch to master
+changes made in stage are not in master
+
+git checkout master
+git merge stage
+cat index.html
+
+git reshutter and  
+------------------------------------------------
+git branch -d stage
+ll
+
+https://github.com/sanjayguruji
+
+
+
+
+ 
+
+
+
+
+
+
+
+

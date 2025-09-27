@@ -1,0 +1,230 @@
+PS C:\Users\10844672\Downloads> ssh -i "d4-key.pem" ec2-user@ec2-18-204-207-212.compute-1.amazonaws.com
+The authenticity of host 'ec2-18-204-207-212.compute-1.amazonaws.com (18.204.207.212)' can't be established.
+ED25519 key fingerprint is SHA256:1GqO6rcTOmO96UybisV9xI2Pu+2nnHfJvCGVs2vnCxw.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+
+
+[root@jenkins ~]# hostnamectl set-hostname jenkinserver.exe.com
+[root@jenkins ~]# bash
+[root@jenkinserver ~]# rpmquery jenkins
+package jenkins is not installed
+[root@jenkinserver ~]# yum update -y
+Last metadata expiration check: 0:23:17 ago on Thu Sep 25 04:25:10 2025.
+Dependencies resolved.
+Nothing to do.
+Complete!
+[root@jenkinserver ~]# yum install wget -y
+Last metadata expiration check: 0:23:41 ago on Thu Sep 25 04:25:10 2025.
+Package wget-1.21.3-1.amzn2023.0.4.x86_64 is already installed.
+Dependencies resolved.
+Nothing to do.
+Complete!
+
+go to Jenkins in aws documentation
+[root@jenkinserver ~]#  wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+[root@jenkinserver ~]# rpmquery jenkins
+package jenkins is not installed
+[root@jenkinserver ~]# rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+[root@jenkinserver ~]# yum upgrade
+Last metadata expiration check: 0:26:08 ago on Thu Sep 25 04:25:10 2025.
+Dependencies resolved.
+Nothing to do.
+Complete!
+[root@jenkinserver ~]# yum install java-21-amazon-corretto -y
+Last metadata expiration check: 0:26:21 ago on Thu Sep 25 04:25:10 2025.
+[root@jenkinserver ~]# yum install jenkins -y
+[root@jenkinserver ~]# systemctl enable jenkins
+Created symlink /etc/systemd/system/multi-user.target.wants/jenkins.service → /usr/lib/systemd/system/jenkins.service.
+[root@jenkinserver ~]# systemctl start Jenkins
+go to instances' public ip :8080
+copy password link from Jenkins page(public ip:8080)
+[root@jenkinserver ~]# cat /var/lib/jenkins/secrets/initialAdminPassword
+0f53dc4e045c47f987c99732e58cc7ca
+[root@jenkinserver ~]# sudo mount -o remount,size=2G /tmp
+[root@jenkinserver ~]# df -h
+Filesystem        Size  Used Avail Use% Mounted on
+devtmpfs          4.0M     0  4.0M   0% /dev
+tmpfs             453M     0  453M   0% /dev/shm
+tmpfs             181M  436K  181M   1% /run
+/dev/nvme0n1p1     10G  2.3G  7.7G  23% /
+tmpfs             2.0G  4.6M  2.0G   1% /tmp
+/dev/nvme0n1p128   10M  1.3M  8.7M  13% /boot/efi
+tmpfs              91M     0   91M   0% /run/user/1000
+Jenkins will work
+[root@jenkinserver ~]# vim /etc/fstab
+[root@jenkinserver ~]# reboot
+PS C:\Users\10844672\Downloads> ssh -i "d4-key.pem" ec2-user@ec2-18-204-207-212.compute-1.amazonaws.com
+
+
+create another instance
+#sudo su -
+#hostnamectl set-hostname dev-server.example.com
+#bash
+#ip a s
+#yum install git -y
+#mkdir /data
+#cd /data
+#git init
+#cat > index.html
+hello all, this is swayam Patnaik
+ctrl d
+create ssh key
+#cd   ,make inside root
+#ssh-keygen
+#cd .ssh/
+#ll
+#cat id_rsa.pub
+inside git - settings - ssh keys - add new ssh
+cd
+cd /data/
+git add .
+git commit -m "message" index.html
+git branch -M main
+change to ssh in repo, then copy from github
+git remote add origin git@github
+git push origin main
+
+click on Jenkins
+to integrate GitHub - Jenkins -- create webhook in git, paste the url of Jenkins page in payload url
+select repo - right top settings - web hooks - add web hooks - copy ip with port of Jenkins - paste on payload url - http://18.204.207.212:8080/github-webhook/ - content type should be app.json
+
+click on Jenkins profile - security - token creation - copy token - go to repo settings - webhooks - click existing - in security - paste the copied
+add webhooks
+
+how ci will work
+
+
+make changes in data file
+#vim index.html
+make the changes
+#git add .
+#git commit -m "second comment" index.html
+#git push origin main
+refresh in GitHub platform, changes are made.
+
+now we have to change in Jenkins
+click on jenkins
+click on new item
+enter name
+create freestyle project
+in source code management, select git
+paste the repo url, by clicking http add https://
+name/configure
+in general - source code management 
+in GitHub - repo - click on code - copy repo url
+paste in repo url in source code management
+change master to main branch specifier
+error will occur because we have to install git package on Jenkins through terminal
+
+in Jenkins terminal
+sudo su -
+yum install git -y
+//give branch name, change master to main
+triggering is imp   understand
+
+build now
+inside Jenkins terminal
+cd /var/lib/jenkins
+build (new item) now in Jenkins page
+console output
+
+in Jenkins term
+ll
+cd workspace/
+cd name of the job
+cat index.html
+
+
+after restarting instance.
+
+copy the public ip of instances
+[root@jenkinserver ~]# cd /var/lib/jenkins/
+[root@jenkinserver jenkins]# ll
+#vim jenkins.model.JenkinsLocationConfiguration.xml
+replace the public ip by pasting the new one
+reload Jenkins by putting new url in url box
+
+
+inside dev-server
+in root
+mkdir /my-code
+cd /my-code/
+git init
+git clone git@github--repo url from downarrow of code button
+
+
+[root@jenkinserver jenkins]# cd
+[root@jenkinserver ~]# sudo su -
+Last login: Thu Sep 25 08:55:41 UTC 2025 on pts/1
+[root@jenkinserver ~]# systemctl restart Jenkins
+
+-----------------------git push to Jenkins done--------------------
+
+
+inside git-machine -- change to java maven instance
+
+#yum install maven -y
+
+#mvm -v
+move to Jenkins - manage Jenkins - plugins - available plugins - maven integration - install - go back button
+in available plugins - deploy to container installation - go back
+again in available plugins - GitHub integration installation
+then restart option in that page
+
+Jenkins console - new item - enter item name - select maven project - source code management to git - paste the GitHub url in https format
+branch specifier to main
+one error will be there - means u need to change something for this machine  
+tools - paste java path(will get from maven-v)
+
+
+inside Jenkins server
+cd workspace
+ll
+cd java-project/
+ll
+webapp.war will be available
+
+
+
+launch new instance
+tomcat-server 
+connect
+//tomcat is based on java
+update java in terminal
+#sudo su -
+#hostnamectl set-hostname tomcat.example.com
+#bash
+#yum install java* -y
+
+inc space in root volume
+in aws console
+click volume
+select volume
+actions
+modify volume
+inc
+modify
+#lsblk
+#blkid
+in root only
+#yum install wget -y
+
+tar -xvzf    ,to extract zip file
+#mv ----
+#cd 
+
+root tomcat conf # vim tomcat-users .xml
+find -name context .xml
+find
+
+post build actions
+**/
+
+
+
+
+
+
+

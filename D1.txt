@@ -1,0 +1,304 @@
+-Kernel
+-Linux(modular), Unix, Redhat
+
+Linux has monolithic kernel, meaning the core of the OS is a single program. It's a mono kernel with modularity. This is achieved through Loadable Kernel Modules.
+Linux is modular bcz it has different separated components which we can bring together and build what we want.
+
+-open source income source? Nominal charge.
+-www.kernel.org working, who donates, CSR(Corporate Social Responsibility)
+-Ubuntu/Suse/--Garuda/Mint/Kali
+-daily update
+-in production, most of the things run over CLI as it does not consume too much resources./ cutting down the cost of the company/scalability/avail/redundancy.
+-switching from redhat to Linux.
+
+HW-Kernel-OS-Shell/Interface.
+
+Why Linux?
+Cloud Computing | IAC | Ansible, Cheph, Puppet | openshift | Openstack | Kubernetes | Terraform | splunk
+RAM, Networking, etc - expensive.
+Local machine vs Kick start - pre execution environment.
+
+VMware EXXI - Interface hypervisor | will virtualise.
+Citrix - xen
+Redhat - Rhev and KVM(Kernel based Virtualisation)
+Microsoft - Hyper - v
+
+Types of Hypervisor.
+Type 1(Bare metal) and Type 2(Hosted)
+
+ISO file - An ISO file(archive of an optical disk) is a single-file, exact digital replica of an entire optical disc like a CD, DVD, or Blu-ray, containing all its data, folders, and file system structure
+
+Modules will load from DVD to RAM, after install they will move to Drive.
+Boot loader, installer(Anaconda) - it controls the entire process. moves modules/media to hard disk, next time machine will execute from hard disk.
+
+PATA
+SDA - disk naming convention. Sata Disk A(disk number) | Sata disk 1, Sata disk 2.
+SATA, MSATA, NVME(faster).
+Automatic vs Custom.
+
+/root partition(C drive) 18gb
+Total space - 236k
+Linux do not crash, as it creates partition.
+/boot 400m
+create virtual space (ohm killers add-on)
+Swap 1K
+partitions comes under system.
+If kernel crashes, files can be copied, no system crash.
+/var/....(default documentary root)
+
+Create FTP server - /var/ftp/hub - 1G.
+Temp partition in Linux
+
+OS is not imp | Confg is imp.
+Create dedicated partition for everything.
+
+We can create any no. of partitions as per requirement.
+boot is a separate file.
+Vib linus.
+Copy Vib linus content to boot folder
+Existing datas are deleted.
+
+3 roots of Linux 
+Root user (root)
+Root home directory (/)
+Root user's home directory (/root)
+
+root direc is resp for storing root user info
+anaconda helps in installation process.
+
+ctrl shift + for inc font
+using root in terminal.
+why you are executing on root and why not regular user? it is possible - yes, because root allows us to make system-wide changes.
+whoami
+su -
+password aaaa
+switched to regular user.
+# she reg user
+
+hostname to check hostname
+hostnamectl set-hostname custom-name to set new name, ct1 is not a command, rather a suffix which stands for controller node.
+will not reflect in current session, only work after restart.
+can type bash
+bash forces the machine to explicitly take the name without closing the current session.
+
+ip a s will show the address - ens160 is ethernet 
+
+Host - vm never communicate to world
+NAT(network address translation) working. - comm with world
+Bridge - comm between virtual and local machine
+
+dig google.com
+ping google.com
+VM gets the address from the cloud.
+Every vm will have 2 ips - pub and pvt. dont change pvt ip. pub ip is responsible for accessing the VM.
+
+ll vs ls
+total 4 | anaconda-ks.cfg
+
+cat command to read the file.
+
+nl vs ll
+press q to quit
+
+touch swayam.txt
+
+whoami
+-root
+su - root name.
+
+mkdir devops 
+ll
+blue col - folders
+white col - files
+
+rm xyz.txt to remove the file
+su - 
+ctrl l to clear
+root user cannot delete directly the txt file but regular user can delete.
+rm --help
+rm -f will delete from root user
+
+#alias
+
+i(interactive) mode in root mode vs regular mode in regular user.
+ls = ls -l automatically
+
+creating own aliases 
+#alias cls = clear 
+
+#alias
+cls = clear will be added
+
+How to delete the alias?
+gets deleted after each session automatically.
+
+# cal
+# cal -3
+# cal --h (help)
+# useradd --help
+# man useradd , man means manual.
+
+3 users in Linux
+user admin
+   |
+    --- super user
+    --- root(auto create)
+    --- power user(created by machine)
+    --- admin
+   |
+    --- system user - (httpd, smbd, sshd) d- demons 
+   |
+    --- normal user(created by root)
+	swayam
+	xyz
+	etc
+	ajit
+
+os automatically creates system user which is responsible to control the service, as per the command it can enable, disable. System user controls the particular service. System users also instructs apache.
+
+in aws
+copy ssh url to terminal(open right click-in downloads where key pair is present
+
+
+# useradd Sanjaya
+info about Sanjaya is stored somewhere which is /etc/passwd
+# cat /etc/passwd
+: is field separator
+first no. is uid - user id
+second number(similar) is group id, by default user is a part of primary group
+group are of 2 types - primary and secondary, always add in secondary group
+home/Sanjaya is the home directory
+everything is assigned by system user
+
+uid is unique for every user
+root uid = 0
+system user uid = 1-999
+normal user uid = 1000+
+
+# vim /etc/passwd
+
+# passwd Sanjaya to set password for user Sanjaya.
+tab auto completion feature is present in Linux.
+
+cat stands for concatenate and it helps to read file contents.
+/etc/shadow is a plain text file which stores secure user account information. It is the most protected file related to user management on a Linux system.
+
+#cat /etc/shadow , displays the content of shadow file
+
+3 dollars are present in pw 
+first dollar and second dollar - sha512(encrypt method) - used to encrypt password
+before third dollar- salt value salt is a random string of chars added to the pw before it is hashed.
+salt value never matches.
+after third dollar, comes password.
+
+UID max 60000
+
+user ageing policy
+# vim /etc/login.defs
+# chage -d 5 -E 10 -I 3 -m 30 -M 99 -W 15 devops , devops user's policy is changed
+# cat /etc/shadow
+# vim /etc/ login
+
+
+#useradd Aditya 
+passwd Aditya
+*****
+#cat /etc shadow to see policies. 
+policies will be same for every user.
+
+root is not restricted user, can move in any working direc
+
+#usermod -s /sbin/nologin jacksparrow - no one can login from his account. disable a user's ability to log into the system via shell.
+shell is changed
+/sbin - directory in Linux file system that contains essential system binaries for system administration.
+-s stands for shell. -s flag tells the usermod command to set the user's login shell to /bin/bash
+usermod -s/bin/bash jacksparrow - acc is unlocked--enter into jacksparrow, changes user's default login shell to bash exit to return to root.
+
+usermod --h
+
+#userdel jacksparrow
+#cat /etc/passwd | grep -i jacksparrow , grep is used to find
+
+after every useradd, new home direc is created.
+
+#useradd -d /home/jacksparrow/ swayam - swayam will replace jacksparrow, so //no new home direc will be created. swayam can now access jacksparrow's content.
+//userdel will not remove datas.
+#su -swayam
+// permission will be denied.
+#cat /etc/passwd | grep -i swayam
+//error will occur
+#touch kk
+//permission denied
+we have to change permission
+#chown swayam /home/jacksparrow
+#chgrp swayam /home/jacksparrow
+
+vim bash.rc
+exit
+
+
+
+
+chmod 777 folder or dir, max - 777
+r - read - 4
+w - write - 2
+x - execute - 1
+
+drwx    r-x     r-x 2 root root
+owner	group	others
+	def= r-x
+sudo su - , to go to root.
+
+understand .bash_profile, .bash_logout, _rc and _history
+
+
+
+mkdir /data
+cd /data/
+groupadd sales
+
+/etc is main directory for system config files
+
+add to sales group
+#usermod -G sales Sanjaya(should be existing users)
+#usermod -G sales pooja
+#usermod -G sales aaditya
+#cat /etc/group | grep - i sales
+
+
+one user can be present in more than 1 groups.
+# usermode -aG sales devops
+ll -d /salesdata/
+ll -d /mktgdata/
+chmod 775 /mktgdata/
+chgrp mktg /mktgdata/
+su - devops
+cd /mktgdata/
+cat > devops.txt
+hello everyone
+
+
+su - pratikshya
+cd /mktgdata/
+ll
+cat devops.txt
+cat >pratikshya.txt
+exit
+//pratikshya can access datas.
+
+
+
+su - pooja
+cat devops.txt
+exit
+-d /mktgdata/
+
+chmod 774 /mktgdata  //permission denied
+ll -d /mktgdata/
+su -pooja
+cd /mktgdata/
+
+ll -d /mktgdata/
+
+
+sudo su - to move to root.

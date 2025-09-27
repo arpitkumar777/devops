@@ -1,0 +1,305 @@
+#cat > swayam.txt
+kajkjakajka
+#cat swayam.txt
+
+sales group creation prior to this in D1
+#mkdir /lti
+#ll -d /lti    ,lists the details of /lti rather than listing its content.
+#chgrp sales /lti/
+#ll -d /lti/
+
+
+
+max permission for directory - 777
+max permission for file - 666 as file will have read and write access
+
+umask manages default permissions.
+777 - 022 = 755 - default permission for folder
+666 - 022 = 644 - default permission for file
+
+
+# umask
+# l.
+# vim .bashrc
+
+umask manages default permissions
+
+
+change rwx policies
+# echo "umask 002" >> ~/.bashrc
+[root@ip-172-31-92-148 ~]# mkdir /sandata
+[root@ip-172-31-92-148 ~]# ll -d /sandata/
+
+new permissions does not gets applied after changing using echo umask.
+#source .bashrc ,is used to explicitly read changes without getting exited from the current session (forcefully), otherwise we can terminate and restart/ by quitting.
+
+eg:
+[root@ip-172-31-92-148 ~]# umask
+0022
+[root@ip-172-31-92-148 ~]# l.
+.bash_logout  .bash_profile  .bashrc  .cshrc  .ssh  .tcshrc
+[root@ip-172-31-92-148 ~]# vim.bashrc
+-bash: vim.bashrc: command not found
+[root@ip-172-31-92-148 ~]# vim .bashrc
+[root@ip-172-31-92-148 ~]# echo "umask 002" >> ~/.bashrc
+[root@ip-172-31-92-148 ~]# mkdir /sandata
+[root@ip-172-31-92-148 ~]# ll -d /sandata/
+drwxr-xr-x. 2 root root 6 Sep 23 04:19 /sandata/  , did not change
+[root@ip-172-31-92-148 ~]# source .bashrc      , to explicitly force the terminal to read the changes
+[root@ip-172-31-92-148 ~]# mkdir /swayammm
+[root@ip-172-31-92-148 ~]# ll -d /swayammm/
+drwxrwxr-x. 2 root root 6 Sep 23 04:21 /swayammm/
+[root@ip-172-31-92-148 ~]#
+
+group can now write.
+
+[root@ip-172-31-92-148 ~]# su - swayam
+Last login: Tue Sep 23 04:06:30 UTC 2025 on pts/1
+[swayam@ip-172-31-92-148 ~]$ cat > test.txt
+hello everyone
+^C
+[swayam@ip-172-31-92-148 ~]$ cat test.txt
+hello everyone
+[swayam@ip-172-31-92-148 ~]$ exit
+logout
+[root@ip-172-31-92-148 ~]# su - swayamm
+[swayamm@ip-172-31-92-148 ~]$ cat > test.txt
+hello there
+^C
+[swayamm@ip-172-31-92-148 ~]$ cat test.txt
+hello there
+[swayamm@ip-172-31-92-148 ~]$ exit
+logout
+[root@ip-172-31-92-148 ~]# su - swayamm
+Last login: Tue Sep 23 04:32:05 UTC 2025 on pts/1
+[swayamm@ip-172-31-92-148 ~]$ cat > test1.txt
+can you delete
+^C
+[swayamm@ip-172-31-92-148 ~]$ exit
+logout
+[root@ip-172-31-92-148 ~]# su - swayam
+Last login: Tue Sep 23 04:31:29 UTC 2025 on pts/1
+[swayam@ip-172-31-92-148 ~]$ rm -rf test1.txt
+[swayam@ip-172-31-92-148 ~]$ exit
+logout
+[root@ip-172-31-92-148 ~]# su -swayamm
+su: failed to execute wayamm: No such file or directory
+[root@ip-172-31-92-148 ~]# su - swayamm
+Last login: Tue Sep 23 04:34:00 UTC 2025 on pts/1
+[swayamm@ip-172-31-92-148 ~]$ cat test1.txt
+can you delete
+[swayamm@ip-172-31-92-148 ~]$
+
+one user can delete the resouces of other users in the same group.
+to prevent it, we use stickybit
+#chmod o+t /sales/
+-t will be added. 
+
+#su -Pratik
+#cd /mktgdata/
+#cat > prat.txt
+#jshjshjshjs
+#exit
+
+#su -devops
+#cd /mktgdata/
+#ll
+#rm -rf prat.txt
+cannot delete now
+
+when prat wants to modify devops file, not possible.
+one more security comes to picture - sgid - applied for groups
+#ll -d /mktgdata/
+#chmod g+s /mktgdata/
+#ll -d /mktgdata/
+will see a 's' permission
+
+now login as prat
+# cd /mktgdata/
+ll
+cat> filename of devops user
+still permission denied bcz sgbit does not gets applied to previous files.
+inside prat
+# cat > training.txt
+today we r lrng devops
+#ll
+
+inside root 
+chmod -R 775 /mktgdata/
+cd /mktgdata/
+
+login from devops
+# su - devops
+cd /mktgdata/
+cat >> training.txt
+these lines append by devops user
+
+#cat training.txt
+
+----------------------------------------
+
+press i inside vim to insert or enter
+execution mode while typing
+press esc for exit - comes to insert mode, then shift :wq
+w means save and q means quit
+
+use :wq! while writing confg files as sometimes wq will not work
+
+----------------
+leno, vi and vim
+
+
+-----------
+
+
+#passwd swayam
+redhat
+redhat
+#ll -d /etc/shadow
+
+only root can read etc/shadow file
+passwd uses an agent in the bg which helps to modify the password
+
+suid is set for executable file.
+
+system binary and user binary files. - understand
+
+#whereis passwd
+#ll -d /usr/bin/passwd
+#chmod u-s /usr/bin/passwd, now this file is not executable file.
+#chmod u+s /usr/bin/passwd, to make it executable again
+
+-----------------------
+Control services and daemons
+
+applications are called as packages
+drivers are modules(usb driver, printer drivers)
+httpd should be package name when we want to host an application(iaas in windows)
+
+redhat, cintora, rawkey
+they use yum and dnf
+package manager is apt in case of apache
+while using suse, package manager is zipper
+package name can vary in amazon Linux, redhat Linux.
+apache 2 in case of ubuntu
+NFS understand in AWS.
+Amazon Linux is just a name, in bg it is centos.
+
+---------------
+#rpmquery httpd
+rpm is redhat package manager
+
+yum resolves some problem.
+yum automatically creates ...
+#yum install httpd
+#rpmquery httpd
+#cd /var/www/html
+#cat > index.html
+#systemctl status httpd
+checks the status - inactive means it is not live - not consuming cpu, resources.
+
+#curl http://localhost
+#systemctl start httpd     , to make it active
+#systemctl status httpd
+
+when u start any service, you have to make it permanent so that after booting, it will be still active
+
+#systemctl start httpd     , to make it active
+#systemctl enable httpd    , to make it active throughout
+#systemctl status httpd
+
+ll -d /var/www/html/
+#vim /etc/httpd/conf/httpd.conf
+default documentary root of apache
+by default this runs on port 80
+change to 81 byi writing I
+
+#yum install curl
+#systemctl restart httpd
+
+change the port to 81 in security groups
+#curl http://192.168.81.153:81    ,checks status of application, index.html
+
+#systemctl stop httpd    ,stops the application
+#systemctl disable httpd  ,will not come up automatically.
+but can start by code.
+
+
+it can be again restarted in the current session
+
+#systemctl mask httpd
+it will be inactive.
+masking will force the user to unmask it, start it and enable it.
+introduced by redhat rel8
+
+#systemctl unmask httpd
+#systemctl start httpd
+#systemctl enable httpd
+curl is command line browser.
+#curl http://192.168.81.153
+
+#vim /etc/httpd/conf/httpd.conf
+
+os kernel reads after restart
+
+asked not to restart(systemctl restart httpd), but without restart, machine will not read new configs.
+instead use - 
+# systemcl reload-or-restart http://192.168.81.153
+incase of reload, it will never restart, now machine will decide what will be good for the server.
+
+
+ssh works based on fingerprint - os + 
+ssh creates 2 keys, handshaking model
+works on key based authen and password based authen
+generally we prefer key based as pw can be compromised at some point
+in small env - we can use pw
+in 1000 pw, we use key
+
+process
+create 2 VMs
+both should be present in host only mode that's why we don't have any ip.
+
+#hostname set-hostname
+#devops.example.com
+#bash
+#ip a s
+
+in one vm
+# nmcli connection show
+# nmcl connection add con-name devops-one type ethernet ifname   maybe ens160 
+# nmcl connection add con-name devops-one type ethernet ifname ens160 ipv4.addresses 192.168.1.10/24 autoconnect yes
+
+#nmcli connection show
+#ip a s
+ip will not come.
+#nmcli connection up devops-one
+#ping ip of other vm
+#l.
+# cd .ssh/
+ll
+cd
+//generating ssh
+#ssh -keygen
+#cd .ssh/
+#ll
+---id_rsa.pub,id_rsa   // share the pub key to the machine where you ant to share the data
+
+in target mach
+# vim /etc/ssh/sshd_config
+permit root-login - yes
+passwordbased authentication should be uncommented
+#systemctl restart sshd
+# 
+
+#cd 
+
+
+#ssh-copy-id root@192.168.81.154  ,copies on target machine
+cat authorized_keys
+ssh root@192.168.81.154
+
+in target machine, password based authentication should be enabled
+
+how can we access data from nvirginia by sitting in Mumbai
+
+understand scp of ssh
