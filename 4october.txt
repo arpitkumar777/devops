@@ -1,0 +1,421 @@
+(add security group custom tcp with port number 8080 t3.small )
+#sudo su -
+#hostnamectl set-hostname jenkinsexample.com  (to set hostname)
+#bash  
+#hostname  (to check hostname)
+#rpmquery Jenkins (to check whether Jenkins is installed or not)
+#yum update -y
+#yum repolist all (to check wether repo is there or not)
+#wget -O /etc/yum.repos.d/jenkins.repo \https://pkg.jenkins.io/redhat-stable/jenkins.repo  (to add Jenkins repo)
+#rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key (to import  key file from Jenkins ci)
+#yum upgrade
+#yum install java-21-amazon-corretto -y (to install java)
+yum install jenkins -y (to install Jenkins)
+systemctl enable jenkins ( to enable Jenkins service)
+systemctl start jenkins (to start Jenkins)
+systemctl status jenkins (to check status of Jenkins)
+yum install git -y
+git init
+(Copy the public ip address of Jenkins server & paste in webbrowser i/paddress:8080)
+(copy the id provided by Jenkins then come to Jenkins terminal cat ______{paste id})
+(copy the generated password and paste to Jenkins web browser)
+(login in jenkins-> install plugins you will be redirected to dashboard)
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+(to solve offline problem in jenkins{due to small size})
+(in Jenkins terminal)
+df -h
+sudo mount -o remount,size=2G /tmp
+vim /etc/fstab 
+tmpfs /tmp tmpfs defaults,noatime,mode=1777,size=2G 0 0 (paste this in vim fstab editor  :wq! to exit from it)
+systemctl daemon-reload
+reboot
+(paste the new ssh key of instance to Jenkins terminal refresh Jenkins page offline problem solved)
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+(Jenkins slowdown problem)
+(if you have stopped your instance and after restart Jenkins will slowdown)
+(go to terminal)
+#cd /var/lib/jenkins 
+#ll
+(copy the path of configuration .xmf file)
+#vim _____(paste the path)
+(inside the editor change the ip address of server instance)
+#systemctl restart jenkins
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+create new instance of same configuration
+sudo su -
+mkdir data
+cd data
+yum install git -y
+git init
+vim index.html (write some text inside it)
+ssh-keygen
+cd .ssh/
+cat id_rsa.pub
+(Now move to GitHub ->login)
+(create new repo->click on account icon->settings->ssh&gpg key->insert add ssh key)
+git add .
+git commit -m "first commit"
+git remote -v
+git remote add origin git@github.com:arpitkumar777/practice.git (paste ssh key of created repo)
+git push origin master
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+now go to Jenkins website
+build new item
+create freestyle project
+git => paste http of your repository=>build now
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+John is running a ecommerce
+(create 3 instances in same region but in different zones 1a,1b,1c)
+(add security group http,all icmpv4)
+machine1
+yum install httpd -y
+cd /var/www/html/
+echo "this is server 1" >index.html
+systemctl start httpd
+systemctl enable httpd
+machine2
+yum install httpd -y
+cd /var/www/html/
+echo "this is server 2" >index.html
+systemctl start httpd
+systemctl enable httpd
+machine3
+yum install httpd -y
+cd /var/www/html/
+echo "this is server 3" >index.html
+systemctl start httpd
+systemctl enable httpd
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+move to instance page 
+goto target groups->create target group->choose instance
+give name to target group->create
+create load balancer->choose application load balancer
+select the zones used
+check if port 80 is allowed
+select the security group used
+select target group
+click on create
+one created copy the dns server name of load balancer and paste in new tab
+now check by stopping the instance
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+EFS lot of users in same team & region but different zones
+AWS EFS - region based service, not zone based - diff zone vms can connect
+working on nfs - port 2049
+in one machine
+yum-install nfs-utils
+ 
+select efs
+create file system
+give name
+vpc
+create
+select it ->
+ 
+create instance -> amazon linux ->  1a
+create another -> redhat Linux ->1b
+create another -> ubuntu -> 1c
+ 
+connect first machine ssh
+rpmquery nfs-utils        ,by default package is instaled in amazon Linux
+ 
+in machine 2(ubuntu)
+apt update -y
+apt install nfs-utils
+ 
+in machine 3(redhat Linux)
+cat /etc/os-release
+yum install nfs-utils
+ 
+go to efs -> select file -> attach -> mount via dns  -> copy the second one -> last word is mounting point
+ 
+on every machine make mount point
+mkdir /data
+mkdir /sajaya
+mkdir /devops
+ 
+copy via dns  in efs
+paste and change the last word according to the made directory
+ 
+go to file systems -> networks
+by def a sec grop is present - not good -
+ 
+in ec2 -> go to sec grp - select the one attached woth the vms -> edit inbound rules -> add nfs -> port 2049
+go to efs networks 
+manage network
+select the sec group name where added nfs for 3 machines
+delete the rest
+save
+ 
+ 
+go to machines
+paste the copied command from mount from dns  and change the last word (/data)
+in Machine 3
+cd /devops
+touch xyz.txt [1..100]
+ 
+go to other machine 2
+paste the copied from dns 2nd opt with the mount point name (/Sanjaya)
+ll
+ 
+available here too
+(efs me file system bano phir jo bne ga uske andr jaa kr network me jo jo zones me instance banay hai usko allow kre ge secturity grp ke sath)
+phir attach kre ge to dns wla code copy kr ke hr terminal me jo name se directory banay  hai last me daale ge)
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$44444
+aws s3 bucket mounting on linux
+create s3 bucket &upload some files 
+while creating bucket enable versioning,disable all public,accept the terms->create bucket
+select the file uploaded->actions->make public acl
+enter inside the file uploaded->permissions->edit acces control list->read read 
+buckect ka acl me permission me public accress enable krna hai
+create iam user->give s3 full access->create access key->cli->download .csv file
+create one instance 
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+aws configure  (accesskey maange ga aur password iam user wla dena hai us-east-1 table)
+ls -a
+cd .aws/
+ll
+cat config
+cat credentials
+cd
+sudo yum install automake fuse fuse-devel gcc-c++ git libcurl-devel libxml2-devel make openssl-devel
+git clone https://github.com/s3fs-fuse/s3fs-fuse.git
+cd s3fs-fuse/
+ll
+./autogen.sh
+./configure --prefix=/usr --with-openssl
+make  (time lage ga )
+sudo make install
+cd
+which s3fs
+touch /etc/passwd-s3fs
+ll -d /etc/passwd-s3fs
+chmod 640 /etc/passwd-s3fs
+ll -d /etc/passwd-s3fs
+vim /etc/passwd-s3fs  (editor khule ga secretid:accesskey)
+s3fs devopsexam123 /mnt -o passwd_file=/etc/passwd-s3fs (devopsexam123 ke jagah apna bucket name dena hai)
+df -h
+cd /mnt/
+ll
+touch sush.txt{1..10}
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$4
+our team is data transfer
+create a instance N.virginia gp2,http
+create volume of 5gb->select it attach to instance->
+lsblk
+blkid
+mkfs.ext4 /dev/nvme1n1
+df -h
+lsblk
+mkdir /data
+mount /dev/nvme1n1 /data/
+df -h
+cd /data/
+ll
+touch sanjay{1..10}.txt
+ll
+come to ec2 page -> go to snapshot ->create snapshot
+select snapshot->actions->copy snapshot
+select destination region->us-east-2
+duplicate the tab come to ohio region
+come to snapshot
+select it and create volume by snapshot
+launch an instance in us east 2a
+attach the additional volume
+lsblk
+df -h
+lsblk
+mkdir /data
+mount /dev/nvme1n1 /data/
+cd /data/
+ll
+
+output :- it should show files of 1st region
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$4
+got to vpc =>
+create vpc -> vpc only -> name(devops-vpc) -> put IPv4 CIDR value 10.0.0.0/16 -> create
+IGW -> create -> name(devops-igw) -> create
+1) subnet -> choose devops-vpc -> name(public-subnet) -> availability zone (1a) -> IPv4 subnet CIDR block(10.0.0.0/24) ->create
+ 
+2) subnet -> choose devops-vpc -> name(private-subnet) -> AZ(1b) -> subnet block (10.0.1.0/24) -> create
+ 
+launch two ec2 instance 1) web-sever
+                        2) database-server
+with same key-pair
+and security  group 
+web-server with devops-vpc and subnet 1a and http 80 should be allowed 
+and public ip enabled  and subnet 1a
+database-server with devops-vpc subnet 1b and same security group and public ip should be disabled and subnet 1b
+ 
+web-server will not connect
+ 
+so now attach igw to vpc
+select devops igw and -> action -> attach to vpc -> select and attach
+ 
+again it will not work 
+create route table
+choose devops-vpc -> name(public-rt) -> create
+now edit routes
+add route => destination(0.0.0.0/0) and target (internet gateway and choose the gateway) -> save
+ 
+now subnet association => 
+edit -> choose public and save
+ 
+now to to terminal and paste the ssh key of web-server and now it will work
+in the terminal
+yum install httpd -y
+echo "This is my apache server" >> /var/www/html/index.html
+systemctl start httpd
+systemctl enable httpd
+curl http://public ip:port
+ 
+ 
+go to security group and add all icmp ipv4 in inbound rules
+ 
+and ping private ip of database server and it will work
+ 
+go to key pair and copy the content of it by control A and control C 
+and paste and save here
+vim custom-vpc-key.pem
+chmod 400 custom-vpc-key.pem =>key name of your own generated key
+ll -d custom-vpc-key.pem
+ssh -i  custom-vpc-key.pem ec2-user@private ip of database-server
+ 
+now we will be able to access the database server but ping google.com will not work
+ 
+so make nat
+ 
+create new nat gateway -> give name (devops-new-ngw) -> choose public subnet -> allocate elastic ip -> create
+ 
+wait for it to available
+ 
+make route table entry
+create -> name(private-rt) -> choose vpc -> create
+edit => add -> destination(0.0.0.0/0) and target (Nat gateway and choose) -> save
+subnet association -> edit -> choose private subnet -> save
+ 
+now internet will work
+ 
+ping google.com    -> this will work now
+ 
+***************************************************************************************************************
+ 
+ 
+VPC peering 
+Go to ohio region
+ 
+create vpc => name(prod-vpc) -> IPv4 CIDR(20.0.0.0/16) -> create
+create subnet => choose vpc(prod-vpc) ->name(prod-web-subnet) -> AZ(2a) -> IPv4 subnet CIDR block(20.0.0.0/24) -> create create another subnet => choose vpc -> name(prod-db-subnet -> AZ(2b) -> IPv4 subnet CIDR block(20.0.1.0/24)->create
+ 
+igw => create -> prod-igw -> create
+now attach it to vpc
+ 
+create route table => 
+name(prod-public-rt) -> choose vpc -> create
+edit => add -> 0.0.0.0/0 and internet gateway and choose igw => save
+ 
+association => edit choose prod-web-subnet -> save
+ 
+now create one instance in ohio
+ 
+name(ohio-server) -> choose vpc -> 2a -> Enable public ip auto assign -> SSH and HTTP and all icmp ipv4 allow name security grp -> launch
+ 
+connect
+ 
+in north virg. goto peering setting 
+give name(web to prod) -> vpc id of requester (devops-vpc) -> my account -> another region choose(ohio) -> 
+paste vpc id of ohio ->create
+ 
+now go to ohio and peering connection and select and action -> accept request
+ 
+now move to n.virg
+go to route table we need to add routes 
+edit and add 20.0.0.0/16 and peering connection and save changes
+ 
+now do same in ohio with destination 10.0.0.0/16 and peering connection and choose also
+ 
+ 
+and now goto north.virg server
+if are in database server move out from there
+and type in web-server
+vim /etc/ssh/sshd_config
+PermitRootLogin yes  => make it yes
+PasswordAuthentication Yes => make it yes
+ 
+and passwd root
+systemctl start sshd
+systemctl enable sshd
+cat > rahul.txt
+scp rahul.txt root@private ip of ohio prod-server:/tmp
+if not works 
+then share the ssh with each other in authorized_keys section
+ 
+then it will work same for ohio server 
+and now move to database server in north virg. server
+by ssh -i key ec2-user@private ip 
+and move to root
+vim /etc/ssh/sshd_config
+PermitRootLogin yes  => make it yes
+PasswordAuthentication Yes => make it yes
+ 
+and passwd root
+systemctl start sshd
+systemctl enable sshd
+cat > server.txt
+scp server.txt root@private ip of ohio prod-server:/tmp
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+ami copy to different region
+Add one instance in N.Virg.
+with port 80(http) allowed
+   yum install httpd -y
+      echo "This is my website" >> /var/www/html/index.html
+     systemctl start httpd
+  systemctl enable httpd
+curl http://localhost:80
+ 
+stop instance before creating ami
+select the instance ->actions->image and templates->create image
+
+now to create ami 
+select instance and action and create image -> name and description -> create
+now go to ami  select ami and action -> copy -> give destination region ->default -> copy
+
+now create a duplicate session and move to ohio and click ami -> launch instance from ami and 
+instance name and make sure to add http securtiy group 
+and connection check 
+sudo su -
+rpmquery httpd
+curl http://localhost:80 (nhi terminal me chale to website pr connect kr chale ga)
+it works
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$4
+cloud formation me jana hai stack create krna hai with previous files upload yaml file proceed automatic one new instance will be created
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$4444
+launch 3 instances in the same region and AMI can be different add nfs in inbound rules 
+in aws linux nfs-utils is preinstalled 
+if not => yum install nfs-utils -y
+and goto file system and click attach we will see mount via dns paste this on instance server remove last efs and put your own directory as a mount point
+ 
+mkdir /data
+paste the url /data/  => to make this work efs by default inherit all zones so go to network in efs and manage and will delete zones which are not in use and add the security 
+group which have nfs 2049 port allowd
+ 
+nfs replication
+if want to access in diff region 
+first create file system in diff region (ohio) and disable file protection
+ 
+In first region (N.Virg.)
+go to file system  ->create replicaton -> replicate to existing  -> choose in this account -> us-east-2(ohio) -> replicate existing -> create
+now create ec2 instance in ohio enable nfs inbound rule and same process as previous 
+and again mount it so it will work
+
+
+
+
+
+
+
+
+
+
