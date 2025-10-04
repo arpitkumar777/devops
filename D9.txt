@@ -1,0 +1,143 @@
+Creating cross platform replication of S3 - Azure has an API which links the access key and secret key which links to AWS
+https://www.google.com/search?q=aws+s3+bucket+mount+on+linux&oq=aws+s3+bucket+mount+on+linux&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIICAEQABgWGB4yDQgCEAAYhgMYgAQYigUyDQgDEAAYhgMYgAQYigUyCggEEAAYogQYiQUyCggFEAAYgAQYogQyBwgGEAAY7wUyCggHEAAYgAQYogTSAQc1NzZqMGo3qAIAsAIA&sourceid=chrome&ie=UTF-8  (aws s3 bucket mount on linux s3fs-fuse in google)
+clone s3fs-fuse repo 
+install aws cli on Linux (google)
+default output format - table
+
+---------Hosting static website-----------------
+inside buckets -> properties -> edit static website->enable -> copy link
+index.html
+save
+will get a url
+go to object
+add folder
+select all website files inside bucket -> actions -> make public using ACLs
+
+go to permissions of bucket -> enable ACLs -> save
+select entire objects -> actions -> make public acl
+
+-----------share data with someone---------------
+select bucket-> properties -> object lock-> edit requester pay -> money will be paid by the other user
+
+bucket versioning under permissions -> enable
+if we delete the objects
+show versions -> deleted file will be shown with delete marker -> deleted file's downloadable link will be available.
+
+-----------------Cross region replication-------------------
+CRR is asynchronous 
+Versioning should be enabled in both the region's bucket
+100 buckets in free tier acc
+64 petabyte inside each bucket
+5 elastic IPs in free tier -> in each region
+
+select bucket -> management -> replication rule
+source object -> apply to all
+source will be virginia
+select create new role in IAM
+choose rule scope -> apply all
+choose bucket
+change storage class -> intelligent tiering
+choose ohio as destination
+replicate
+add file
+refresh in ohio
+
+-----------Lifecycle confg----------------------
+inside management
+lifecycle rule -> first one
+add transition current versions - 3
+
+----------------------Load Balancer-----------------
+ELB - manual load balancer
+3 types of LBs - network, classic and application
+F5 is a hardware based load balancer
+if there will be 4 servers - dedicated url will be given - all servers will be added behind that server
+uses round robin.
+if a server gets crashes - it will be automatically get deleted from the target group.
+create 4 VMs - 4 different data
+create cross zoned VMs
+port 80 should be allowed
+install apache in all the machines
+# yum install httpd -y
+# cd /vat/www/html
+# echo "jhdjdhjdh" > index.html
+# ll
+systemctl start httpd
+systemctl enable httpd
+cd
+yum install curl
+curl http://localhost
+
+in M2(redhat)
+dnf install httpd -y
+
+in M3
+
+apt update -y
+apt install apache2 -y
+
+add all the servers into target groups
+create target groups
+instances
+target group name
+make it
+register targets
+select all vms
+include 80
+create target group
+
+load balancer
+create application load balancer
+under AZs
+select first 4
+select sec group
+under default
+select target group - select the one which was made in target group
+listening port 80
+
+auto balancing automatically creates elastic 
+
+------------auto scaling-----------------
+as per our workload, we can add servers horizontally
+manual scaling, dynamic scaling, scheduled scaling
+after defining policies -> aws automatically configures everything.
+application's auto scaling is created
+launch template
+give name
+choose ami
+first one
+instance type - t3.micro
+key pair
+network settings - us-east-1a
+sec group
+advanced det
+add !bin/bash texts
+create template
+
+create auti scaling group
+give name
+launch template - existing one
+vpc
+us-east-1-b-c-d
+balanced best effort
+next
+
+attach a new (third one)
+internet facing
+vpc first one
+health checks -> turn on first and last
+select target
+next
+desired capacity -> 2
+min desired - 1
+max desired - 2
+under automatic scaling - optional -> select target tracking
+target value - 75
+target cpu
+instance warmup - 180
+next
+next
+create
+
+can check in auto scaling groups
+

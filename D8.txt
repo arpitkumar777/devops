@@ -1,0 +1,282 @@
+continued from D7
+-----------------------------------------------------------
+
+EBS storage is not available on EC2
+Dell EMC2
+IBM storage
+Hp storage    ,are vendors which provide SAN storage
+
+AMI is of OS
+Snapshot is of disk
+
+
+SAN is storage area network which is a network which allows our device to access storage which is present in the cloud.
+SAN gets connected with one device at once because it comes under block storage.
+Formatting creates a tracker and sectors, sector converts into blocks - we can store inside blocks - ssd
+low level formats are made by the vendors like cgit
+high level vendors like sony.
+AWS EBS is used here - we can only claim the volume size - it is zine based service - local device should be present in the same region - can only connect with one machine at a time - need to detach if we need to attach with any other machine.
+Sec group is a free service.
+--------------------------
+in instance 1 - create volume - attach with instance
+[ec2-user@ip-172-31-87-33 ~]$ sudo su -
+[root@ip-172-31-87-33 ~]# mkdir /data
+[root@ip-172-31-87-33 ~]# lsblk
+NAME          MAJ:MIN RM SIZE RO TYPE MOUNTPOINTS
+nvme0n1       259:0    0  10G  0 disk
+├─nvme0n1p1   259:1    0  10G  0 part /
+├─nvme0n1p127 259:2    0   1M  0 part
+└─nvme0n1p128 259:3    0  10M  0 part /boot/efi
+nvme1n1       259:4    0  10G  0 disk
+[root@ip-172-31-87-33 ~]# mkfs.ext4 /dev/nvme1n1
+mke2fs 1.46.5 (30-Dec-2021)
+Creating filesystem with 2621440 4k blocks and 655360 inodes
+Filesystem UUID: a64e8732-d47d-4411-ac6a-1c50fcb43c53
+Superblock backups stored on blocks:
+        32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632
+
+Allocating group tables: done
+Writing inode tables: done
+Creating journal (16384 blocks): done
+Writing superblocks and filesystem accounting information: done
+
+[root@ip-172-31-87-33 ~]# mount /dev/nvme1n1 /data/
+[root@ip-172-31-87-33 ~]# cd /data/
+[root@ip-172-31-87-33 data]# touch pooja.txt
+ll
+
+
+create snapshot in us-east-1a as the volume is in us-east-1a
+create another instance with same region but different zone(1b)	
+need to attach the same volume with this instance too
+create snapshot -> convert that snapshot to disk -> 
+we cant directly attach our snapshot to instance -> convert to disk
+select snapshot -> in actions -> create volume -> az = 1b
+after creation -> attach vol with instance -> select 1b
+
+in second machine
+lsblk
+do not assign file as snapshot comes with complete file, complete dara transfer will occur
+only make a directory 
+mkdir /data2
+mount /dev/nvme1n1 /data2/
+cd /data2/
+understand
+cd
+
+umount /data2/
+
+-----------------------------------------------
+copying snapshot to other region and accessing the volume
+select snapshot -> copy snapshot -> give zone = us-east-2(ohio)
+
+-----------------------------------------------------------------
+
+multi snapshot volume
+in N virginia
+create vol -> gp2 ->az - us-east-1a
+select vol -> attach -> dev/sd -> attach 
+in terminal
+lsblk
+mkfs.ext3 /dev/nvme1n1
+mkdir /data
+mount /dev/nvme1n1 /data/
+cd /data/
+touch devops
+ll
+cd
+
+create snapshot - select instance(multi volume) - create snapshot
+
+
+
+backup vs snapshot
+AWS backups takes backup of everything over AWS
+
+
+--------reserved instance-------------------
+spot requests are not used for production - bidding - without intimation, aws terminates it 
+changing sec group -> create new one ->outbound rule -> ssh -22 -> http -80 -> create
+
+
+
+
+
+revise
+create instance
+volume will be attached initially
+
+
+
+---------------create snapshots for same region but diff AZs-----------------
+
+
+create instance in 1a
+create a volume in 1a
+create snapshot - select volume(made in 1a) - done
+select snapshot - attach volume - 1b
+go to volume - select the one made with az 1b - attach with instance made in 1b
+done
+
+---------------------------------------------------------------------------------------------
+					EFS
+AWS EFS - region based service, not zone based - diff zone vms can connect
+working on nfs - port 2049
+in one machine
+yum-install nfs-utils
+
+select efs
+create file system
+give name
+vpc
+create
+select it -> 
+
+create instance -> amazon linux ->  1a
+create another -> redhat Linux ->1b
+create another -> ubuntu -> 1c
+
+connect first machine ssh
+rpmquery nfs-utils        ,by default package is instaled in amazon Linux
+
+in machine 2(ubuntu)
+apt update -y
+apt install nfs-utils
+
+in machine 3(redhat Linux)
+cat /etc/os-release
+yum install nfs-utils
+
+go to efs -> select file -> attach -> mount via dns  -> copy the second one -> last word is mounting point
+
+on every machine make mount point
+mkdir /data
+mkdir /sajaya
+mkdir /devops
+
+copy via dns  in efs
+paste and change the last word according to the made directory
+
+go to file systems -> networks
+by def a sec grop is present - not good - 
+
+in ec2 -> go to sec grp - select the one attached woth the vms -> edit inbound rules -> add nfs -> port 2049
+go to efs networks 
+manage network
+select the sec group name where added nfs for 3 machines
+delete the rest
+save
+
+
+go to machines
+paste the copied command from mount from dns  and change the last word (/data)
+in Machine 3
+cd /devops
+touch xyz.txt [1..100]
+
+go to other machine 2
+paste the copied from dns 2nd opt with the mount point name (/Sanjaya)
+ll
+
+available here too 
+
+
+----configure replication in efs--------
+for different region
+create replication
+replicate existing
+choose (file in this acc)
+give destination region - us-east-2
+in destination, efs should be configured
+go to ohio
+create file system
+browse in virginia -> select destination ohio(will b present after creation)
+in ohio, file system protection - disable it
+go to ohio 
+go to the created file in ohio efs
+
+go to ohio
+make 1 instance 
+add nfs 2049 inbound rule
+change network -> manage-> remove existing-> add sec group of 3 instances 
+
+go to efs in ohio
+in sec group -> delete the existing -> add the sec group in the one file which is present
+
+--------AWS object storage-------
+cheapest storage stores large amount of data which stores log data
+Netflix, sony, tseries use object data, can store pictures
+AWS S3 is a global service, gets inherited automatically
+create bucket
+gen purpose
+disable block all public access
+create
+upload objects
+click the file -> object url -> paste -> access denied
+inside obects -> permission -> can see permissions -> but cant edit
+inside buckets -> go to made one -> permissions -> under acl -> bucket owner enforced  -> select hyperlink -> enable ACLs 
+inside objects -> permission -> can see permissions -> can edit -> 
+
+should upload through machines
+can access aws s3 in cross platform.
+
+make an instance in other region
+connect ssh
+cat /etc/os-release
+df -h
+
+go to iam
+create user
+attach policies directly
+aws s3 all policies
+go inside user
+security creds
+create access key
+cli
+create access key
+download .csv file
+save
+
+go to terminal
+install aws cli
+copy from google docs
+curl https --- 3 lines
+aws configure
+give access key (from aws sec cred site)
+give secret 
+give region name
+give output format - table
+ls -a
+cd .aws/
+ll
+cat config
+cat credentials
+cd
+sudo yum install automise fuse fuse-devel gcc c+ git
+git clone https://github.com/s3fs-fuse
+ll
+cd s3fs-fuse/
+./autogen.sh
+./configure
+make
+sudo make install
+----
+-----
+-----
+
+inside vim file, paste access id:security key
+
+
+-----access through cross platform-------------
+make another windows instance
+install utility on windows machine to get connected with S3 objects - 
+download tnt file in the instance's google
+open folder -> install
+open that - give Linux instance's user id's user id and sec key
+will get the data
+open server manager in win instance
+turn off ip configured security
+
+
+
+

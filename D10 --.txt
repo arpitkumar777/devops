@@ -1,0 +1,168 @@
+---------------------- Network -------------------------
+
+Default VPC created by AWS.
+In every region, a VPC exists -- Region based service
+38 Regions, 120 availability zones
+
+
+Class A - 0.0.0.0 - 127.0.0.0
+Class B - 128.0.0.0 - 191.0.0.0
+Class C - 192.0.0.0 - 223.0.0.0
+................................
+
+ ---------------------------------------------
+| VISR -- VPS -> IGW -> Subnet -> Route Table |
+ ---------------------------------------------
+
+VLSM calculator -- 10.0.0.0 /24 250 150
+
+
+----------------------------------------------------------------------------------------------
+
+In Console:
+Search VPC
+- VPC only
+- Give relevant names 
+- IPV4 CIDR 10.0.0.0/16
+- Create
+
+See for IGW Internet Gateway-- 
+- create IGW
+- Create
+
+Create Subnet-- (2)
+- Select VPC
+- give name (public subnet and private-subnet)
+- Which zone -- 1A and 1B
+- Range 10.0.0.0/24 | 10.0.1.0/24
+
+
+Host EC2 Instances
+1) Name: web-server -- new key pair -- Network -> choose vpc devops --> public-subnet -> devops-sg (SSH + HTTP (Anywhere)) -> Launch --> Public IP enable
+
+2) Name: database-server -- choose above key pair --> VPC devops --> private subnet --> existing SG -> launch
+
+3) Launch web-server -->  Connection timed out
+
+VPC and IGW are not connected --> IGW --> Select --> action --> Attach IGW --> select VPC --> Attach
+Route tables --> Create --> Select VPC --> Create --> edit route --> 0.0.0.0/0 -> IGW --> select IGW
+Subnet association --> Public subnet --> select and save
+
+Add ICMP protocol to SG 
+
+server to machine PING Status:
+ping private ip address -- to check if they are working together
+
+---accessing private through public server:
+copy keypair contents
+vim key-pair-file-name.pem --> paste --> save and quit
+ll -d key-pair-file-name.pem
+chmod 400 to the above file
+ssh -i key-pair-file-name.pem ec2-user@private-ip of the machine
+ping google.com
+-- still internet will not work in the private network
+
+use NAT gateway (Network Address Translation)
+
+Again in console:
+1) VPC dashboard --> NAT --> devops-ngw --> public-subnet --> allocate elastic IP --> create
+2) Route table --> create new --> private-subnet name--> choose vpc --> save
+edit route --> 0.0.0.0/0 - NAT gateway 
+subnet association -> select private --> save 
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+2nd Lab: Cross Region Communication
+
+
+Create 1 VPC environment in N.Virgina and the same type in Ohio
+
+Ohio:
+Sub.name -- prod-web-subnet -- 2a -- 20.0.0.0/24
+Sub.name -- prod-db-subnet -- 2b -- 20.0.1.0/24
+
+Create IGW -- prod-IGW
+action -- attach
+
+route table -- prod-public-rt -- Select VPC -- edit route -- add route  -- IGW -- Save
+subnet assosciations -- prod-web-subnet - save
+
+create EC2 instance: 
+ohio-server -- new key pair -- subnet: prod-web-subnet
+launch the instance
+ 
+CLI of Ohio machine:
+hostnamectl set-hostname prod-web.example.com
+bash
+ping 10.0.0.160 (private IP)
+ping public IP of the N.Virgina machine
+ ----------------------------------------------------------
+| copy keypair contents                                    |
+| vim key-pair-file-name.pem --> paste --> save and quit    | 
+| ll -d key-pair-file-name.pem                              |
+| chmod 400 to the above file                                |
+ -------------------------------------------------------------
+
+
+N.Virgina machine:
+-- cat > abc.txt
+	uagdsiusagd
+-- vim /etc/ssh/sshd_config
+	permitRootLogin yes
+	passwordAuthentication yes
+-- systemctl start sshd
+-- systemctl enable sshd
+-- passwd root
+-- scp abc.txt root@public ip of ohio machine:/tmp
+	secure copy = scp
+
+same in Ohio machine:
+-- vim /etc/ssh/sshd_config
+ 	permitRootLogin yes
+ 	passwordAuthentication yes
+-- systemctl restart sshd
+-- systemctl enable sshd
+
+ohio machine:
+cd /tmp -- ll -- file will be there
+
+Lets say if it says "permission denied" during file transfer:
+create the ssh-keygen 
+paste the ssh of one region into another's authorized_keys file.
+
+
+---------------------------------------------------------------------------------
+
+Now the file transfer is happening via Internet, lets do it via VPC peering
+
+---------------------------------------------------------------------------------
+N.Virgina
+
+left menu -- peering connection -- devops-to-prod -- VPC requester of that region -- same account & other region -- VPC of Ohio region & VPC accepter ID (Copy the VPC ID of Ohio machine)
+
+
+request of peering connection in Ohio machine
+
+N. Virginia:
+ping priv Ip of Ohio
+
+route table entries in both the regions
+N.virginia -- 20.0.0.0/16 -- peering conn -- save 
+Ohio -- 10.0.0.0/16 -- peering conn -- save
+
+N.virgnia
+ping 20.0.0.88 -- ping happening
+cat > new1.txt
+scp new1.txt root@prvateipof-ohio:/opt 
+
+
+Ohio:
+ping 10.0.0.82
+cat > abc.txt
+scp abc.txt root@prvateipof-virginia:/opt 
+
+
+
+

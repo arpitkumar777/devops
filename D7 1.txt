@@ -1,0 +1,230 @@
+CC is the collection of resources available somewhere accessible through internet as per my requirement.
+Capital expenditure, operational expenditure
+No upfront, no maintenance, etc
+Manual scaling(Vertical) - present in own premise - manual setting up of network, os, servers etc vs Horizontal scaling(Auto scaling) - present in cloud - scale up or scale down as per requirement automatically.
+Upkeep - focus only on your business.
+SAAS-PAAS-IAAS-Function as a service(FAAS) are service models
+
+IAAS - EC2, VPC
+PAAS - Database, AWS ECS, EKS, Containers
+SAAS - Social Media
+FAAS - Netflix using AWS Lambda 
+
+Deployment models
+Public - entire application is running in the cloud
+Private - only available for particulars
+Hybrid - Combination of public and private
+
+Where to host the servers/dbs
+
+https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html
+instance size matters -
+IAC
+AMI - public images(manages by Amzazon) vs private images(managed by specific users) 
+AMI is stored somewhere - they use 2 volumes -1. root device and instance based, root device should always be EBS
+t3.micro is the hardware
+Why key-pair is required - need it while deploying/logging in - authentication is required.
+Key based sec vs password vs sec
+2 types of keys - public and private
+private key will be available in laptop - public key is stored with aws
+Network setting to access the VM/instance
+in Linux - port 22 is always req
+security, sec group are zone based services as well as region based services.
+ARN - amazon resource number
+3/3 check (hardware, platform and EBS) - System status check vs instance status check vs attached EBS status check
+DAS - direct attached storage
+SAN - storage area network
+Root volume - where we are storing our ec2 OS
+----------------------------------------------------------------------------
+
+cat /etc/os-release
+yum install httpd -y
+rpm -qa httpd
+cd /var/www/html
+echo "aaaaaaa"
+echo "hello there" > index.html
+cd
+systemctl start httpd
+systemctl enable httpd
+useradd swayam 
+go to networking -copy public ip  paste:80
+//in sec group http should be added - with 80
+incase of shutdown, public ip will be changed  - we need to allocate and reserve the elasctic ip
+--------------------------------------------------------------------
+
+two ips - efimeral ip(default) and elastic ip(paid)
+go to elastic ips -> can use with one instance without any restriction.
+Elastic ip is stored in our device
+select the ip -> action -> associate elastic ip -> choose instance -> choose pvt ip-> associate.
+public ip will wind with private id
+now IP will never change even after shutdown
+
+just start the httpd once more
+
+user data in instance page
+you can inject user data - Linux codes 
+add !bin/bash initially
+cat /etc/os-release
+yum install httpd -y
+rpm -qa httpd
+cd /var/www/html
+echo "aaaaaaa"
+echo "hello there" > index.html
+cd
+systemctl start httpd
+systemctl enable httpd
+useradd swayam -p devops -c message
+---------------------------------------------------------
+
+
+yum install nfs-utils -y
+yum install cifs-utils -y
+yum install tree
+yum install dns* -y
+touch Sanjay.txt
+cd /tmp/
+touch pooja.txt
+ll
+cd
+-------------------------------------------------------------------------
+
+creating custom image
+
+select instance -> click on action - image and temp - create image - devops name - in image descrp-- this is a devops custom image - no reboot - add tag - name(key) - dev img(value) -> create
+click on AMIs - select- launch instance from ami
+------------------------------------------------------------------------------
+
+select ami - > actions -> copy ami -> select region -> copy -> duplicate session -> go to other region
+
+-----------------------------------------------------------------------------
+
+sending to another account
+acc id - ami - permission tab - edit -> add acc id -> save
+will show in private ami
+
+-----------------------------------------------------------------
+
+in real world -> we need to bulk deploy -> create template (assign hardware,network,security) just once.
+trigger template whenever u want using IAC - IAC creates same instance exactly
+
+EC2 with EBS(ebs is present over network) -> data will be available even if we shutdown the instance
+EC2 with instance backed(present in device)(faster) -> we can't shutdown this one -> used when we require the data consistently
+go to ami catalog -> community ami -> elect root or ebs
+
+---------template---------------------
+
+in left panel of ec2 -> launch template - give name -> give descrp -> template tag - add - give key value (tag acts as an identity) -> app image -> browse -> first one -> t3.micro -> key pair -> advanced details -> inject the user data -> launch -> template is ready
+
+select it - actions -> launch instance from template -> 2 in summary -> select os -> key pair-> launch
+
+-------------------------------------
+
+upon deleting instance, volume gets terminated automatically
+
+-----------------------------------------
+
+-----------------------types of storage---------------
+SAN storage or block storage or AWS EBS or persistent storage - SSD(gp2,gp2,io1,io2), HDD(sc-1), 
+File storage or NAS storage 
+Object storage or AWS S3 
+
+
+in hard drive, data gets stored in blocks, in Linux by default we can store 4kb data in one block
+EC2 instance and EBS should be in same region and same zone(region based as well as zone based)
+
+
+-----------creating new volume and accessing it through terminal-------------
+create volume instance
+attach it with instance
+in terminal
+# lsblk     ,shows the attached storage
+#blkid
+#mkfs.ext4 /dev/nvme1n1      
+assigned file system, as by default permission will be denied
+# mkdir /data
+# mount /dev/nvme1n1 /data/
+# lsblk
+# cd /data/
+# touch lost+found 
+
+storage will be lost after logout
+blkid and copy UUID
+go to vim/etc/fstab
+paste uuid then      /data   ext4     defaults   0 0 
+//now it is hard coded
+
+NAME          MAJ:MIN RM SIZE RO TYPE MOUNTPOINTS
+nvme0n1       259:0    0   8G  0 disk
+├─nvme0n1p1   259:1    0   8G  0 part /
+├─nvme0n1p127 259:2    0   1M  0 part
+└─nvme0n1p128 259:3    0  10M  0 part /boot/efi
+nvme1n1       259:4    0  10G  0 disk /data               ,temp mounting
+
+
+cta /etc/passwd
+//user will be created
+
+
+
+mount /dev/nvme1
+mount /dev/nvme1
+mount  /dev/nvme1n1 /data
+
+after resizing 5gb to 8gb
+
+mkswap erases previous data
+use -
+resize2fs  /dev/nvme1n1
+df -h
+
+LVM is used in backend - logical .... 
+
+in AWS volume size can only be increasd, not deceased -- so make another volume - copy the datas
+
+EFS charges acc to usage, not for total size (if we use 8/10, will be charged for 8)
+Volume charges acc to size(if we use 8/10, will be charged for 10)
+
+IOPS = input output processing per second - can control physical storage(possible in cloud)
+in 33.6 gb we can utilize for free
+if size = 34, 2 iops will be increased
+
+in gp3 - minimum iops - 3000
+we can also customized iops in gp3 but not in gp2 that is why gp3 is faster, used in enterprise level, more price.
+
+---------------------------------------------------
+----Increasing size of volume on the fly----------
+df -h
+inside volumes
+actions -> modify volume -> inc size - 20
+lsblk       ,updated
+df -h       ,but here no update, will show actual size
+blkid       ,to see uuid, type will be xfs
+growpart /dev/nvme0n1 
+df -h       ,no change
+xfs_growfs /
+reboot the instance 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
