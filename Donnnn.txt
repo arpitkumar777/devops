@@ -1,0 +1,764 @@
+sudo yum install -y yum-utils shadow-utils
+sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+sudo yum install terraform
+vim sg.tf (change aws credentials ,vpc,key name)
+provider "aws" {
+
+  region     = "us-east-1"
+
+  access_key = "use yours"
+
+  secret_key = "use yours"
+
+}
+
+resource "aws_instance" "my-resource-3" {
+
+  ami           = "ami-0341d95f75f311023"
+
+  instance_type = "t3.micro"
+
+  key_name      = "my-kp"
+
+  vpc_security_group_ids = ["${aws_security_group.terra-sg.id}"]
+
+  tags = {
+
+    Name = "dev-server-3"
+
+     }
+
+}
+
+resource "aws_security_group" "terra-sg" {
+
+  name        = "terra-sg"
+
+  description = "Allow TLS inbound traffic and all outbound traffic"
+
+  vpc_id      = "vpc-003a212bcd5a7a581"
+
+  tags = {
+
+    Name = "terra-sg"
+
+  }
+
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_tls_ipv4" {
+
+  security_group_id = aws_security_group.terra-sg.id
+
+  cidr_ipv4         = "0.0.0.0/0"
+
+  from_port         = 443
+
+  ip_protocol       = "tcp"
+
+  to_port           = 443
+
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_ssh_ipv4" {
+
+  security_group_id = aws_security_group.terra-sg.id
+
+  cidr_ipv4         = "0.0.0.0/0"
+
+  from_port         = 22
+
+  ip_protocol       = "tcp"
+
+  to_port           = 22
+
+}
+
+
+resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
+
+  security_group_id = aws_security_group.terra-sg.id
+
+  cidr_ipv4         = "0.0.0.0/0"
+
+  ip_protocol       = "-1" # semantically equivalent to all ports
+
+}
+ 
+terraform init
+terraform fmt
+terraform validate
+terraform plan
+terraform apply
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+(add port 8080)
+yum install docker -y
+systemctl start docker
+systemctl enable docker
+docker pull nginx
+docker run -it --name nginx-app -p 8080:80 nginx:latest /bin/bash
+apt update -y
+cd /usr/share/nginx/html
+echo " This is devops" > index.html
+service nginx start
+ctrl p+q
+just paste the public ip address: 8080 or do curl ip:8080 in terminal -> it will show same output which u changed in index.html
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+create three instances one main server and two nodes
+set hostname in all
+in main server
+yum install ansible-core* -y
+cd /etc/ansible
+vim ansible.cfg(paste)
+# config file for ansible -- http://ansible.com/
+# ==============================================
+
+# nearly all parameters can be overridden in ansible-playbook 
+# or with command line flags. ansible will read ANSIBLE_CONFIG,
+# ansible.cfg in the current working directory, .ansible.cfg in
+# the home directory or /etc/ansible/ansible.cfg, whichever it
+# finds first
+
+[defaults]
+
+# some basic default values...
+
+hostfile       = /etc/ansible/hosts
+library        = /usr/share/ansible
+remote_tmp     = $HOME/.ansible/tmp
+pattern        = *
+forks          = 5
+poll_interval  = 15
+sudo_user      = root
+#ask_sudo_pass = True
+#ask_pass      = True
+transport      = smart
+remote_port    = 22
+
+# additional paths to search for roles in, colon seperated
+#roles_path    = /etc/ansible/roles
+
+# uncomment this to disable SSH key host checking
+#host_key_checking = False
+
+# change this for alternative sudo implementations
+sudo_exe = sudo
+
+# what flags to pass to sudo
+#sudo_flags = -H
+
+# SSH timeout
+timeout = 10
+
+# default user to use for playbooks if user is not specified
+# (/usr/bin/ansible will use current user as default)
+#remote_user = root
+
+# logging is off by default unless this path is defined
+# if so defined, consider logrotate
+#log_path = /var/log/ansible.log
+
+# default module name for /usr/bin/ansible
+#module_name = command
+
+# use this shell for commands executed under sudo
+# you may need to change this to bin/bash in rare instances
+# if sudo is constrained
+#executable = /bin/sh
+
+# if inventory variables overlap, does the higher precedence one win
+# or are hash values merged together?  The default is 'replace' but
+# this can also be set to 'merge'.
+#hash_behaviour = replace
+
+# How to handle variable replacement - as of 1.2, Jinja2 variable syntax is
+# preferred, but we still support the old $variable replacement too.
+# Turn off ${old_style} variables here if you like.
+#legacy_playbook_variables = yes
+
+# list any Jinja2 extensions to enable here:
+#jinja2_extensions = jinja2.ext.do,jinja2.ext.i18n
+
+# if set, always use this private key file for authentication, same as 
+# if passing --private-key to ansible or ansible-playbook
+#private_key_file = /path/to/file
+
+# format of string {{ ansible_managed }} available within Jinja2 
+# templates indicates to users editing templates files will be replaced.
+# replacing {file}, {host} and {uid} and strftime codes with proper values.
+ansible_managed = Ansible managed: {file} modified on %Y-%m-%d %H:%M:%S by {uid} on {host}
+
+# by default, ansible-playbook will display "Skipping [host]" if it determines a task
+# should not be run on a host.  Set this to "False" if you don't want to see these "Skipping" 
+# messages. NOTE: the task header will still be shown regardless of whether or not the 
+# task is skipped.
+#display_skipped_hosts = True
+
+# by default (as of 1.3), Ansible will raise errors when attempting to dereference 
+# Jinja2 variables that are not set in templates or action lines. Uncomment this line
+# to revert the behavior to pre-1.3.
+#error_on_undefined_vars = False
+
+# set plugin path directories here, seperate with colons
+action_plugins     = /usr/share/ansible_plugins/action_plugins
+callback_plugins   = /usr/share/ansible_plugins/callback_plugins
+connection_plugins = /usr/share/ansible_plugins/connection_plugins
+lookup_plugins     = /usr/share/ansible_plugins/lookup_plugins
+vars_plugins       = /usr/share/ansible_plugins/vars_plugins
+filter_plugins     = /usr/share/ansible_plugins/filter_plugins
+
+# don't like cows?  that's unfortunate.
+# set to 1 if you don't want cowsay support or export ANSIBLE_NOCOWS=1 
+#nocows = 1
+
+# don't like colors either?
+# set to 1 if you don't want colors, or export ANSIBLE_NOCOLOR=1
+#nocolor = 1
+
+# the CA certificate path used for validating SSL certs. This path 
+# should exist on the controlling node, not the target nodes
+# common locations:
+# RHEL/CentOS: /etc/pki/tls/certs/ca-bundle.crt
+# Fedora     : /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+# Ubuntu     : /usr/share/ca-certificates/cacert.org/cacert.org.crt
+#ca_file_path = 
+
+# the http user-agent string to use when fetching urls. Some web server
+# operators block the default urllib user agent as it is frequently used
+# by malicious attacks/scripts, so we set it to something unique to 
+# avoid issues.
+#http_user_agent = ansible-agent
+
+[paramiko_connection]
+
+# uncomment this line to cause the paramiko connection plugin to not record new host
+# keys encountered.  Increases performance on new host additions.  Setting works independently of the
+# host key checking setting above.
+#record_host_keys=False
+
+# by default, Ansible requests a pseudo-terminal for commands executed under sudo. Uncomment this
+# line to disable this behaviour.
+#pty=False
+
+[ssh_connection]
+
+# ssh arguments to use
+# Leaving off ControlPersist will result in poor performance, so use 
+# paramiko on older platforms rather than removing it
+#ssh_args = -o ControlMaster=auto -o ControlPersist=60s
+
+# The path to use for the ControlPath sockets. This defaults to
+# "%(directory)s/ansible-ssh-%%h-%%p-%%r", however on some systems with
+# very long hostnames or very long path names (caused by long user names or 
+# deeply nested home directories) this can exceed the character limit on
+# file socket names (108 characters for most platforms). In that case, you 
+# may wish to shorten the string below.
+# 
+# Example: 
+# control_path = %(directory)s/%%h-%%r
+#control_path = %(directory)s/ansible-ssh-%%h-%%p-%%r
+
+# Enabling pipelining reduces the number of SSH operations required to 
+# execute a module on the remote server. This can result in a significant 
+# performance improvement when enabled, however when using "sudo:" you must 
+# first disable 'requiretty' in /etc/sudoers
+#
+# By default, this option is disabled to preserve compatibility with
+# sudoers configurations that have requiretty (the default on many distros).
+# 
+#pipelining = False
+
+# if True, make ansible use scp if the connection type is ssh 
+# (default is sftp)
+#scp_if_ssh = True
+
+[accelerate]
+accelerate_port = 5099
+accelerate_timeout = 30
+accelerate_connect_timeout = 5.0
+
+ll
+vim hosts (ye dono ip node 1 aur 2 ka private ip hai)
+[dev-server]
+172.31.27.18
+
+[prod-server]
+172.31.85.172
+cd
+
+ssh-keygen
+cd .ssh/
+cat id_rsa.pub
+(paste the key in node 1 and node 2 vim authorized keys)
+ssh root@172.31.27.18 (for checking purpose)
+cd
+ansible all --list-hosts
+vim users.yaml
+
+---
+- name: creating users
+  hosts: all
+  tasks:
+   - name: Creating user
+     user:
+      name: "{{ item }}"
+      state: present
+     with_items:
+      - sush
+      - abc
+      - xyz
+
+ansible-playbook users.yaml --syntax-check
+ansible-playbook users.yaml
+(in node 1 and node 2 write tail /etc/passwd)
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@22
+vim eks.sh(change subnet do jagah krna hai)
+
+
+#!/bin/bash
+#################################################################################################################
+#Host EKS CLUSTER via EKSCTL
+#################################################################################################################
+ #create iam role and attach policy
+ #ECRfull access,EKSpolicy and IAM full access
+ apt-get update -y
+ apt install unzip -y
+ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+ unzip awscliv2.zip
+ sudo ./aws/install
+ aws configure
+ #Install EKS Tool
+ curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+ sudo mv /tmp/eksctl /usr/local/bin
+ eksctl version
+ Install Kubectl
+ curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
+ sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl 
+ kubectl version --client
+ ssh-keygen
+ #Create EKS Cluster
+ eksctl create cluster --name my-cluster --region us-east-1 --version 1.32 --vpc-public-subnets subnet-0008e6a1476419d21,subnet-043ba27959f2b92d4 --without-nodegroup
+##############################################################################################################################
+ ##Create a Node Group##
+##############################################################################################################################
+ eksctl create nodegroup \
+  --cluster my-cluster \
+  --region us-east-1 \
+  --name my-node-group \
+  --node-ami-family Ubuntu2204 \
+  --node-type t3.small \
+  --subnet-ids subnet-0008e6a1476419d21,subnet-043ba27959f2b92d4 \
+  --nodes 3 \
+  --nodes-min 2 \
+  --nodes-max 4 \
+  --ssh-access \
+  --ssh-public-key /root/.ssh/id_rsa.pub
+
+
+
+chmod +x eks.sh
+./eks.sh
+
+-- vim deploy.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: devops
+spec:
+  containers:
+  - name: web-app
+    image: nginx:1.14
+    ports:
+    - containerPort: 80
+ 
+kubectl apply -f deploy.yaml
+kubectl get pods
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+create a instance using c7 i flex large size and add k8s ports ubuntu instance create one node also
+vim k8s.sh
+
+# disable swap
+sudo swapoff -a
+
+# Create the .conf file to load the modules at bootup
+cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+overlay
+br_netfilter
+EOF
+
+sudo modprobe overlay
+sudo modprobe br_netfilter
+
+# sysctl params required by setup, params persist across reboots
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward                 = 1
+EOF
+
+# Apply sysctl params without reboot
+sudo sysctl --system
+
+## Install CRIO Runtime
+sudo apt-get update -y
+sudo apt-get install -y software-properties-common curl apt-transport-https ca-certificates gpg
+
+sudo curl -fsSL https://pkgs.k8s.io/addons:/cri-o:/prerelease:/main/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/cri-o-apt-keyring.gpg
+echo "deb [signed-by=/etc/apt/keyrings/cri-o-apt-keyring.gpg] https://pkgs.k8s.io/addons:/cri-o:/prerelease:/main/deb/ /" | sudo tee /etc/apt/sources.list.d/cri-o.list
+
+sudo apt-get update -y
+sudo apt-get install -y cri-o
+
+sudo systemctl daemon-reload
+sudo systemctl enable crio --now
+sudo systemctl start crio.service
+
+echo "CRI runtime installed successfully"
+
+# Add Kubernetes APT repository and install required packages
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+sudo apt-get update -y
+sudo apt-get install -y kubelet="1.32.0-*" kubectl="1.32.0-*" kubeadm="1.32.0-*"
+sudo apt-get update -y
+sudo apt-get install -y jq
+
+sudo systemctl enable --now kubelet
+sudo systemctl start kubelet
+
+## Execute ONLY on "Master Node"
+
+sudo kubeadm config images pull
+
+sudo kubeadm init
+
+mkdir -p "$HOME"/.kube
+sudo cp -i /etc/kubernetes/admin.conf "$HOME"/.kube/config
+sudo chown "$(id -u)":"$(id -g)" "$HOME"/.kube/config
+
+
+# Network Plugin = calico
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.0/manifests/calico.yaml
+
+
+
+chmod +x k8s.sh
+./k8s.sh
+
+in another node
+vim node.sh  (change token)
+
+# disable swap
+sudo swapoff -a
+
+# Create the .conf file to load the modules at bootup
+cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+overlay
+br_netfilter
+EOF
+
+sudo modprobe overlay
+sudo modprobe br_netfilter
+
+# sysctl params required by setup, params persist across reboots
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward                 = 1
+EOF
+
+# Apply sysctl params without reboot
+sudo sysctl --system
+
+## Install CRIO Runtime
+sudo apt-get update -y
+sudo apt-get install -y software-properties-common curl apt-transport-https ca-certificates gpg
+
+sudo curl -fsSL https://pkgs.k8s.io/addons:/cri-o:/prerelease:/main/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/cri-o-apt-keyring.gpg
+echo "deb [signed-by=/etc/apt/keyrings/cri-o-apt-keyring.gpg] https://pkgs.k8s.io/addons:/cri-o:/prerelease:/main/deb/ /" | sudo tee /etc/apt/sources.list.d/cri-o.list
+
+sudo apt-get update -y
+sudo apt-get install -y cri-o
+
+sudo systemctl daemon-reload
+sudo systemctl enable crio --now
+sudo systemctl start crio.service
+
+echo "CRI runtime installed successfully"
+
+# Add Kubernetes APT repository and install required packages
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+sudo apt-get update -y
+sudo apt-get install -y kubelet="1.32.0-*" kubectl="1.32.0-*" kubeadm="1.32.0-*"
+sudo apt-get update -y
+sudo apt-get install -y jq
+
+sudo systemctl enable --now kubelet
+sudo systemctl start kubelet
+##Note Plz replace this token from your cluster Token
+kubeadm join 172.31.33.207:6443 --token reu77r.ct7icljh22oxqq5d --discovery-token-ca-cert-hash sha256:bffcb090c7322b01e58a954a2e808c5c02e6891e6e69807d0436cab8abf100d8
+
+chmod +x node1.sh
+./node1.sh
+
+now in master node
+ kubectl get nodes
+ vim deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: nginx-deployment
+ labels:
+   app: web
+spec:
+ replicas: 1
+ selector:
+  matchLabels:
+    app: web
+ template:
+   metadata:
+     labels:
+       app: web
+   spec:
+    containers:
+    - name: web
+      image: nginx:1.14
+      ports:
+      - containerPort: 80
+
+
+vim hpa.yaml
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+ name: my-app-hpa
+spec:
+ scaleTargetRef:
+   apiVersion: apps/v1
+   kind: Deployment
+   name: nginx-deployment
+ minReplicas: 4
+ maxReplicas: 10
+ metrics:
+   - type: Resource
+     resource:
+       name: cpu
+       target:
+         type: Utilization
+         averageUtilization: 50
+
+kubectl apply -f deployment.yaml
+kubectl get pods
+ kubectl apply -f hpa.yaml
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2
+create 2 instance
+
+yum install ansible-core* -y
+ssh-keygen
+cd .ssh/
+cat id_rsa.pub (paste the generated key on other instance)
+cd /etc/ansible
+vim ansible.cfg 
+# config file for ansible -- http://ansible.com/
+# ==============================================
+
+# nearly all parameters can be overridden in ansible-playbook 
+# or with command line flags. ansible will read ANSIBLE_CONFIG,
+# ansible.cfg in the current working directory, .ansible.cfg in
+# the home directory or /etc/ansible/ansible.cfg, whichever it
+# finds first
+
+[defaults]
+
+# some basic default values...
+
+hostfile       = /etc/ansible/hosts
+library        = /usr/share/ansible
+remote_tmp     = $HOME/.ansible/tmp
+pattern        = *
+forks          = 5
+poll_interval  = 15
+sudo_user      = root
+#ask_sudo_pass = True
+#ask_pass      = True
+transport      = smart
+remote_port    = 22
+
+# additional paths to search for roles in, colon seperated
+#roles_path    = /etc/ansible/roles
+
+# uncomment this to disable SSH key host checking
+#host_key_checking = False
+
+# change this for alternative sudo implementations
+sudo_exe = sudo
+
+# what flags to pass to sudo
+#sudo_flags = -H
+
+# SSH timeout
+timeout = 10
+
+# default user to use for playbooks if user is not specified
+# (/usr/bin/ansible will use current user as default)
+#remote_user = root
+
+# logging is off by default unless this path is defined
+# if so defined, consider logrotate
+#log_path = /var/log/ansible.log
+
+# default module name for /usr/bin/ansible
+#module_name = command
+
+# use this shell for commands executed under sudo
+# you may need to change this to bin/bash in rare instances
+# if sudo is constrained
+#executable = /bin/sh
+
+# if inventory variables overlap, does the higher precedence one win
+# or are hash values merged together?  The default is 'replace' but
+# this can also be set to 'merge'.
+#hash_behaviour = replace
+
+# How to handle variable replacement - as of 1.2, Jinja2 variable syntax is
+# preferred, but we still support the old $variable replacement too.
+# Turn off ${old_style} variables here if you like.
+#legacy_playbook_variables = yes
+
+# list any Jinja2 extensions to enable here:
+#jinja2_extensions = jinja2.ext.do,jinja2.ext.i18n
+
+# if set, always use this private key file for authentication, same as 
+# if passing --private-key to ansible or ansible-playbook
+#private_key_file = /path/to/file
+
+# format of string {{ ansible_managed }} available within Jinja2 
+# templates indicates to users editing templates files will be replaced.
+# replacing {file}, {host} and {uid} and strftime codes with proper values.
+ansible_managed = Ansible managed: {file} modified on %Y-%m-%d %H:%M:%S by {uid} on {host}
+
+# by default, ansible-playbook will display "Skipping [host]" if it determines a task
+# should not be run on a host.  Set this to "False" if you don't want to see these "Skipping" 
+# messages. NOTE: the task header will still be shown regardless of whether or not the 
+# task is skipped.
+#display_skipped_hosts = True
+
+# by default (as of 1.3), Ansible will raise errors when attempting to dereference 
+# Jinja2 variables that are not set in templates or action lines. Uncomment this line
+# to revert the behavior to pre-1.3.
+#error_on_undefined_vars = False
+
+# set plugin path directories here, seperate with colons
+action_plugins     = /usr/share/ansible_plugins/action_plugins
+callback_plugins   = /usr/share/ansible_plugins/callback_plugins
+connection_plugins = /usr/share/ansible_plugins/connection_plugins
+lookup_plugins     = /usr/share/ansible_plugins/lookup_plugins
+vars_plugins       = /usr/share/ansible_plugins/vars_plugins
+filter_plugins     = /usr/share/ansible_plugins/filter_plugins
+
+# don't like cows?  that's unfortunate.
+# set to 1 if you don't want cowsay support or export ANSIBLE_NOCOWS=1 
+#nocows = 1
+
+# don't like colors either?
+# set to 1 if you don't want colors, or export ANSIBLE_NOCOLOR=1
+#nocolor = 1
+
+# the CA certificate path used for validating SSL certs. This path 
+# should exist on the controlling node, not the target nodes
+# common locations:
+# RHEL/CentOS: /etc/pki/tls/certs/ca-bundle.crt
+# Fedora     : /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+# Ubuntu     : /usr/share/ca-certificates/cacert.org/cacert.org.crt
+#ca_file_path = 
+
+# the http user-agent string to use when fetching urls. Some web server
+# operators block the default urllib user agent as it is frequently used
+# by malicious attacks/scripts, so we set it to something unique to 
+# avoid issues.
+#http_user_agent = ansible-agent
+
+[paramiko_connection]
+
+# uncomment this line to cause the paramiko connection plugin to not record new host
+# keys encountered.  Increases performance on new host additions.  Setting works independently of the
+# host key checking setting above.
+#record_host_keys=False
+
+# by default, Ansible requests a pseudo-terminal for commands executed under sudo. Uncomment this
+# line to disable this behaviour.
+#pty=False
+
+[ssh_connection]
+
+# ssh arguments to use
+# Leaving off ControlPersist will result in poor performance, so use 
+# paramiko on older platforms rather than removing it
+#ssh_args = -o ControlMaster=auto -o ControlPersist=60s
+
+# The path to use for the ControlPath sockets. This defaults to
+# "%(directory)s/ansible-ssh-%%h-%%p-%%r", however on some systems with
+# very long hostnames or very long path names (caused by long user names or 
+# deeply nested home directories) this can exceed the character limit on
+# file socket names (108 characters for most platforms). In that case, you 
+# may wish to shorten the string below.
+# 
+# Example: 
+# control_path = %(directory)s/%%h-%%r
+#control_path = %(directory)s/ansible-ssh-%%h-%%p-%%r
+
+# Enabling pipelining reduces the number of SSH operations required to 
+# execute a module on the remote server. This can result in a significant 
+# performance improvement when enabled, however when using "sudo:" you must 
+# first disable 'requiretty' in /etc/sudoers
+#
+# By default, this option is disabled to preserve compatibility with
+# sudoers configurations that have requiretty (the default on many distros).
+# 
+#pipelining = False
+
+# if True, make ansible use scp if the connection type is ssh 
+# (default is sftp)
+#scp_if_ssh = True
+
+[accelerate]
+accelerate_port = 5099
+accelerate_timeout = 30
+accelerate_connect_timeout = 5.0
+
+
+vim hosts ( [dev-server] below it paste ip address of other instance)
+ansible all --list-hosts
+vim apache.yaml
+ansible-playbook apache.yaml
+
+on other instance
+rpmquery httpd
+systemctl status httpd
+
+
+
+
+
+
+- name: tasks
+  hosts: all
+  tasks:
+
+    - name: Install httpd
+      dnf:
+        name: httpd
+        state: latest
+
+    - name: Start and enable httpd service
+      service:
+        name: httpd
+        state: started
+        enabled: true
+
+
