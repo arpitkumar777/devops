@@ -1,0 +1,65 @@
+DOCKER -- Continued:
+
+# hostnamectl set-hostname docker.example.com
+# bash
+# systemctl start docker and enable
+# mkdir /devops
+# cd /devops
+# vim dockerfile
+--	FROM ubuntu:22.04
+	RUN apt-get update && apt-get install apache2 -y
+	RUN apt-get install tree -y openssh-server openssh-client
+	RUN cd /var/www/html
+	RUN echo "Hi, Morning!" > /var/www/html/index.html
+	RUN service apache2 start
+	
+# docker image build -t devops:1 . (Build a image and assign the tag "devops" with version "1" with the contents of the current directory)
+# devops images (shows the image created)
+# docker run -it --name web-app devops:1 /bin/bash
+    1  apt update -y
+    2  apt install apache2
+    3  cd /var/www/html
+    4  ll
+    5  cat index.html
+    6  service apache2 start
+    7  cd	
+# curl http://172.17.0.2
+
+
+mkdir /prod-app and cd
+vim Dockerfile
+	FROM centos:8
+	MAINTAINER sushanthharur@gmail.com
+	RUN yum repolist
+	RUN yum update 
+	WOKDIR /var/www/html
+	RUN cd /var/www/html
+	RUN echo "This is my web app" > /var/www/html/index.html
+	EXPOSE 80
+docker image build -t prod-apache:1 .
+
+
+# cd /devops
+# cp dockerfile /test
+# docker stop web-app
+# docker rm web-app
+# docker rmi devops/container
+# cd /test/
+# ll
+# copy the commands of public ECR repository to attach images
+# 
+
+
+Kubeadm process of installation:
+Only add those ports as instructed by the Kubernetes documentation -- search for Kubernetes ports
+
+pod - smallest unit in Kubernetes and provides redundancy to containers
+
+kubectl get ns
+kubectl get pod -n kube-system
+
+
+
+
+kubeadm join 172.31.15.33:6443 --token jcd0ex.re2dvic6tj2by6lk   
+--discovery-token-ca-cert-hash sha256:45f9f0beb79e920ca1173b1af13a708a9e60b1efef4dc3e90d76d2d7add94b6b

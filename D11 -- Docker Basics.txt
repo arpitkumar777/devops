@@ -1,0 +1,109 @@
+Launch an EC2 instance
+yum install docker -- to download latest version of docker else goto docker hubs and copy the docker image command of the version of our choice
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+Commands:
+    1  yum install docker
+    2  docker info
+    3  systemctl start docker
+    4  systemctl enable docker
+    5  docker info
+    6  docker pull ubuntu
+    7  docker pull nginx
+    8  docker pull httpd
+    9  docker ps -a
+   11  docker run -it --name web-app ubuntu:latest /bin/bash
+   -------------------------------Inside the image ----------------------------------
+    1  apt update -y
+    2  apt install apache2 -y
+    3  cd /var/www/html
+    4  echo "this is a sample text" > index.html
+    5  cd
+    6  service apache2 start
+   ----------------------------------------------------------------------------------
+   13  docker start web-app
+   14  docker attach web-app
+   15  docker inspect web-app | less (Shows me the associated IP for the image)
+   16  curl http://172.17.0.2
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ASSIGNMENT:
+------ To create a image from a running container and moving the image from one instance to the other instance
+    1  yum install docker
+    2  docker pull ubuntu
+    3  systemctl start docker
+    4  systemctl enable docker
+    5  docker pull ubuntu
+    6  docker pull nginx
+    7  docker pull httpd
+    8  docker run -it --name my-container nginx /bin/bash
+-------------------- Inside Image --------------------------------
+		1  apt update -y
+    		2  apt install apache2
+    		3  cd /var/www/html
+    		4  echo "Hi, am learning Docker for the first time" > index.html
+    		5  cd
+		0  service start apache2
+    		6  curl http://172.17.0.2
+-------------------------------------------------------------------------------
+   
+    9  docker inspect my-container | less
+   10  docker start my-container
+   11  docker attach my-container
+   12  curl http://172.17.0.2
+   13  docker start my-container
+   14  docker attach my-container
+   15  clear
+   16  docker run -it --name container-new -p 8080:80 nginx /bin/bash
+	
+---------------------- Inside Image -------------------------------------------
+
+    1  apt update -y
+    2  apt install apache2
+    3  cd /var/www/html
+    4  echo "This is the docker file" > index.html
+    5  cd
+    6  curl http://172.17.0.3
+    7  service start apache2
+    8  service apache2 start
+    9  curl http://172.17.0.3
+--------------------------------------------------------------------------------------------------------
+   17  docker ps -a
+   18  docker commit 5fe73f9854d6 my-custom-image --- Creating an image of container-new
+   19  docker save -o custom-new.tar my-custom-image:latest
+   20  gzip custom-new.tar
+   21  ssh-keygen -- sending my SSH-key to other instance 
+   22  cd .ssh/
+   23  cat id_rsa.pub
+   24  vim authorized_keys -- to paste the SSH-KEY of other instance 
+   25  cd
+   27  scp custom-new.tar.gz root@44.200.164.44:/tmp (Using the public IP of the other instance to send the file)
+
+
+
+Instance 2:
+    1  ssh-keygen
+    2  cd .ssh/
+    3  cat id_rsa.pub
+    4  vim authorized_keys
+    5  cd
+    6  cd /tmp
+    7  ll
+    8  docker import custom-new.tar.gz
+    9  cd
+   10  yum install docker
+   11  docker pull ubuntu
+   12  systemctl start docker
+   13  systemctl enable docker
+   14  docker pull ubuntu
+   15  docker pull nginx
+   16  docker pull httpd
+   17  cd /tmp
+   18  ll
+   19  docker import custom-new.tar.gz
+   20  docker images
+   21  docker tag 3472e61fd863 new-docker-container:latest
+   22  docker images
+   23  cd
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
