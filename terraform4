@@ -1,0 +1,161 @@
+resource "aws_vpc" "prod-vpc" {
+  cidr_block = "10.0.0.0/16"
+}
+ 
+ 
+## This is for IGW
+ 
+resource "aws_internet_gateway" "prod-igw" {
+  vpc_id = aws_vpc.prod-vpc.id
+ 
+  tags = {
+    Name = "prod-vpc"
+  }
+}
+ 
+ 
+## THis is for public subnet
+ 
+resource "aws_subnet" "public-subnet" {
+  vpc_id     = aws_vpc.prod-vpc.id
+  cidr_block = "10.0.0.0/24"
+ 
+  tags = {
+    Name = "public-subnet"
+  }
+}
+ 
+## THis is for private subnet
+ 
+resource "aws_subnet" "private-subnet" {
+  vpc_id     = aws_vpc.prod-vpc.id
+  cidr_block = "10.0.1.0/24"
+ 
+  tags = {
+    Name = "private-subnet"
+  }
+}
+ 
+## THis is for security group
+resource "aws_security_group" "test_access" {
+  name        = "test_access"
+  vpc_id      = aws_vpc.prod-vpc.id
+  description = "allow ssh and http"
+ 
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+ 
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+ 
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+ 
+# Security Group Ends Here
+ 
+# Creating Route table for public-subnet
+ 
+resource "aws_route_table" "public-rt" {
+  vpc_id = aws_vpc.prod-vpc.id
+ 
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.prod-igw.id
+  }
+}
+ 
+# Public route table associate
+ 
+resource "aws_route_table_association" "publiv-rt-asso" {
+  subnet_id      = aws_subnet.public-subnet.id
+  route_table_id = aws_route_table.public-rt.id
+}
+ 
+## ec2 in public subnet
+ 
+# Private server
+resource "aws_instance" "db-server" {
+  ami             = "ami-0341d95f75f311023"
+  subnet_id       = aws_subnet.public-subnet.id
+  instance_type   = "t3.micro"
+  security_groups = ["${aws_security_group.test_access.id}"]
+  key_name        = "terra-admin"
+  tags = {
+    Name     = "test-World"
+    Stage    = "testing"
+    Location = "chennai"
+  }
+ 
+}
+ 
+##create an EIP for EC2
+resource "aws_eip" "sush-ec2-eip" {
+  instance = aws_instance.db-server.id
+}
+ 
+# add ssh key
+ 
+resource "aws_key_pair" "terra-admin" {
+  key_name   = "terra-admin"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCTeoTqe6jz96/4gk33BomV/4wNd7BbUaM8+/7O3RDaX9k8a8S4GfB7F3lJZ69bKbyd5PjYtFEDX2AQpdIYx107BA/DpVva+U5a7WFsImHcGGCv/2b5W2RXPJtAJG1S+UorI1T6NYGukroI4BN3Oxb1ShRcFslGXpkUKefgmM4t+xH9D1AUpFzlEpdUi7pCs5XhscTENdJR3NaGDTfrjvzsWWpHky51J0dPNg9umv3yxLi9ptVlv1lEMCEt5+/exvULTC2GvcZ/hgMzSoCQ8awzJdi1qhZDo5BU6Co5/pD4rFGw1nYZbnCGiY54ycY03lELT3/DYJMPY0tTDQMrI1HcxHUgKD5mTP/5CJ9zdnjL9wr4s7ULhmLI043mgv9RYs6d13OtBdCbCPsLae3xK4btGeMexl1Zm7xi23jc78p2v0eeoGTLii9VgbRL8fTYnnV3RnxvKK8UwUbPD8c97gPLEuLzeu+0zLetSalS4ozM+Qnk0lVKBPSnISlGq88ZcRc= root@terr.example.com"
+}
+ 
+##create a public ip for Nat gateway
+ 
+resource "aws_eip" "nat-eip" {
+}
+ 
+# Create NAT gateway
+ 
+resource "aws_nat_gateway" "my-ngw" {
+  allocation_id = aws_eip.nat-eip.id
+  subnet_id     = aws_subnet.public-subnet.id
+}
+ 
+resource "aws_route_table" "private-rt" {
+  vpc_id = aws_vpc.prod-vpc.id
+ 
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_nat_gateway.my-ngw.id
+  }
+ 
+ 
+  tags = {
+    Name = "private-rt"
+  }
+}
+ 
+##route Tatable assosication code
+resource "aws_route_table_association" "private-asso" {
+  subnet_id      = aws_subnet.private-subnet.id
+  route_table_id = aws_route_table.private-rt.id
+}
+ 
+## Ec2 code
+resource "aws_instance" "deb-server" {
+  ami             = "ami-0341d95f75f311023"
+  subnet_id       = aws_subnet.public-subnet.id
+  instance_type   = "t3.micro"
+  security_groups = ["${aws_security_group.test_access.id}"]
+  key_name        = "terra-admin"
+  tags = {
+    Name     = "server1"
+    Stage    = "testing"
+    Location = "chennai"
+  }
+ 
+}
